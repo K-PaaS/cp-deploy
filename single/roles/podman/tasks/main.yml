@@ -1,0 +1,52 @@
+---
+- name: Get home dir path
+  become: false
+  shell: "echo $HOME"
+  register: home_dir_path
+
+- name: Check podman package installation
+  shell: dpkg -l | grep podman | awk '{print $2}'
+  register: podman_install
+
+- name: Install podman package
+  shell: |
+    echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /' | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+    curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/Release.key | apt-key add -
+    apt-get update
+    "echo 'N\nN' > {{ home_dir_path.stdout }}/cp-deployment/tmp_podman"
+    "apt-get install -y podman < {{ home_dir_path.stdout }}/cp-deployment/tmp_podman"
+  when: podman_install.stdout == ""
+  args:
+    warn: false
+
+- name: Delete tmp file
+  file:
+    path: "{{ home_dir_path.stdout }}/cp-deployment/tmp_podman"
+    state: absent
+
+- name: Add registries.conf
+  shell: |
+    cat <<EOF >> /etc/containers/registries.conf.d/01-unqualified.conf
+    unqualified-search-registries = ['docker.io', 'quay.io']
+    EOF
+    cat <<EOF >> /etc/containers/registries.conf.d/10-docker.io.conf
+    [[registry]]
+    prefix = "docker.io"
+    insecure = false
+    blocked = false
+    location = "docker.io"
+    EOF
+    cat <<EOF >> /etc/containers/registries.conf.d/10-quay.io.conf
+    [[registry]]
+    prefix = "quay.io"
+    insecure = false
+    blocked = false
+    location = "quay.io"
+    EOF
+    "cat <<EOF >> /etc/containers/registries.conf.d/10-harbor.{{ ip }}.nip.io.conf"
+    [[registry]]
+    "prefix = \"harbor.{{ ip }}.nip.io\""
+    insecure = true
+    blocked = false
+    "location = \"harbor.{{ ip }}.nip.io\""
+    EOF
