@@ -13,8 +13,8 @@
 - name: Run container platform deployment
   become: false
   shell: |
-    "cd {{ home_dir_path.stdout }}/cp-deployment/standalone"
-    "./deploy-cp-cluster.sh > {{ home_dir_path.stdout }}/cp-deployment/standalone/deploy-result.log"
+    cd {{ home_dir_path.stdout }}/cp-deployment/standalone
+    ./deploy-cp-cluster.sh > {{ home_dir_path.stdout }}/cp-deployment/standalone/deploy-result.log
 
 - name: Check deploy
   become: false

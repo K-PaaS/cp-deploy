@@ -11,7 +11,7 @@ crio_pause_image: "{{ pod_infra_image_repo }}:{{ pod_infra_version }}"
 # By default unqualified images are not allowed for security reasons
 crio_registries:
   - insecure: true
-    location: {MASTER_NODE_PUBLIC_IP}:30002
+    location: {MASTER1_NODE_PUBLIC_IP}:30002
     unqualified: false
   - location: docker.io
     unqualified: true
