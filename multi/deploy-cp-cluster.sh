@@ -197,13 +197,13 @@ for ((i=0;i<2;i++))
 
     HOST_CHECK=$(sudo cat /etc/hosts | grep "$master1_node_private_ip $master1_node_hostname")
 
-    if [ "HOST_CHECK" == "" ]
-      echo "$master1_node_private_ip $master1_node_hostname" | sudo tee -a /etc/hosts > /dev/null
-      echo "$master1_node_private_ip $master1_node_hostname" | tee -a hostlist > /dev/null
+    if [ "$HOST_CHECK" == "" ]
+      echo "$master1_node_private_ip $master1_node_hostname" | sudo tee -a /etc/hosts
+      echo "$master1_node_private_ip $master1_node_hostname" | tee -a hostlist
     fi
 done
 
-ssk-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
+ssh-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
 rm -rf hostlist
 echo "Update /etc/hosts, .ssh/known_hosts file."
 

@@ -177,12 +177,12 @@ fi
 # Update /etc/hosts, .ssh/known_hosts
 HOST_CHECK=$(sudo cat /etc/hosts | grep "$MASTER1_NODE_PRIVATE_IP $MASTER1_NODE_HOSTNAME")
 
-if [ "HOST_CHECK" == "" ]
-  echo "$MASTER1_NODE_PRIVATE_IP $MASTER1_NODE_HOSTNAME" | sudo tee -a /etc/hosts > /dev/null
-  echo "$MASTER1_NODE_PRIVATE_IP $MASTER1_NODE_HOSTNAME" | tee -a hostlist > /dev/null
+if [ "$HOST_CHECK" == "" ]
+  echo "$MASTER1_NODE_PRIVATE_IP $MASTER1_NODE_HOSTNAME" | sudo tee -a /etc/hosts
+  echo "$MASTER1_NODE_PRIVATE_IP $MASTER1_NODE_HOSTNAME" | tee -a hostlist
 fi
 
-ssk-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
+ssh-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
 rm -rf hostlist
 echo "Update /etc/hosts, .ssh/known_hosts file."
 
