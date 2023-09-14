@@ -7,5 +7,5 @@
 - name: Download container platform deployment
   become: false
   git:
-    repo: https://github.com/K-PaaS/cp-deployment.git
+    repo: https://github.com/K-PaaS/cp-deploy.git
     dest: "{{ home_dir_path.stdout }}/cp-deployment/"
