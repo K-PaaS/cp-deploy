@@ -179,6 +179,7 @@ cp roles/kubernetes-apps/metrics_server/defaults/main.yml.ori roles/kubernetes-a
 cp roles/kubernetes/control-plane/tasks/kubeadm-setup.yml.ori roles/kubernetes/control-plane/tasks/kubeadm-setup.yml
 cp roles/container-engine/cri-o/defaults/main.yml.ori roles/container-engine/cri-o/defaults/main.yml
 cp inventory/mycluster/group_vars/all/all.yml.ori inventory/mycluster/group_vars/all/all.yml
+cp inventory/mycluster/group_vars/k8s_cluster/addons.yml.ori inventory/mycluster/group_vars/k8s_cluster/addons.yml
 cp ../applications/nfs-provisioner-4.0.0/deployment.yaml.ori ../applications/nfs-provisioner-4.0.0/deployment.yaml
 cp roles/cp/storage/defaults/main.yml.ori roles/cp/storage/defaults/main.yml
 
@@ -275,6 +276,7 @@ if [ "$KUBE_CONTROL_HOSTS" -gt 1 ]; then
   done
 fi
 
+sed -i "s/{METALLB_IP_RANGE}/$METALLB_IP_RANGE/g" inventory/mycluster/group_vars/k8s_cluster/addons.yml
 sed -i "s/{NFS_SERVER_PRIVATE_IP}/$NFS_SERVER_PRIVATE_IP/g" ../applications/nfs-provisioner-4.0.0/deployment.yaml
 sed -i "s/{STORAGE_TYPE}/$STORAGE_TYPE/g" roles/cp/storage/defaults/main.yml
 
