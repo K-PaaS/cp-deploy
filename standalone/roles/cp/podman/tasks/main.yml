@@ -11,8 +11,6 @@
     echo 'N\nN' > tmp_podman
     apt-get install -y podman < tmp_podman
   when: podman_install.stdout == ""
-  args:
-    warn: false
 
 - name: Delete tmp file
   file:

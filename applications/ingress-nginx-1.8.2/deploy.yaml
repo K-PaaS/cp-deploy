@@ -490,7 +490,7 @@ spec:
             drop:
             - ALL
           runAsUser: 101
-          runeAsNonRoot: true
+          runAsNonRoot: true
           seccompProfile:
             type: "RuntimeDefault"
         volumeMounts:

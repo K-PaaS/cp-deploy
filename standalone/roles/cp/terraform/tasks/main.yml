@@ -10,10 +10,18 @@
     dest: "{{ home_dir_path.stdout }}/terraform_1.3.4_linux_amd64.zip"
 
 - name: Unarchive terraform
-  unarchive:
-    src: "{{ home_dir_path }}/terraform_1.3.4_linux_amd64.zip"
-    dest: "/usr/local/bin"
+  shell: "unzip {{ home_dir_path.stdout }}/terraform_1.3.4_linux_amd64.zip"
+
+- name: Copy terraform
+  copy:
+    src: "{{ home_dir_path.stdout }}/terraform"
+    dest: "/usr/bin/terraform"
     mode: "0755"
+
+- name: Delete terraform
+  file:
+    path: "{{ home_dir_path.stdout }}/terraform"
+    state: absent
 
 - name: Delete terraform zip
   file:

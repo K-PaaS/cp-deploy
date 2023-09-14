@@ -15,8 +15,6 @@
   shell: |
     curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.16.0 TARGET_ARCH=x86_64 sh -
   when: istio_dir.stdout == ""
-  args:
-    warn: false
 
 - name: Copy istioctl
   copy:
