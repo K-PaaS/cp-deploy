@@ -177,13 +177,12 @@ fi
 # Update /etc/hosts, .ssh/known_hosts
 HOST_CHECK=$(sudo cat /etc/hosts | grep "$MASTER1_NODE_PRIVATE_IP $MASTER1_NODE_HOSTNAME")
 
-if [ "$HOST_CHECK" == "" ]
+if [ "$HOST_CHECK" == "" ]; then
   echo "$MASTER1_NODE_PRIVATE_IP $MASTER1_NODE_HOSTNAME" | sudo tee -a /etc/hosts
   echo "$MASTER1_NODE_PRIVATE_IP $MASTER1_NODE_HOSTNAME" | tee -a hostlist
 fi
 
 ssh-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
-rm -rf hostlist
 echo "Update /etc/hosts, .ssh/known_hosts file."
 
 # Container Platform configuration settings
