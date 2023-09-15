@@ -189,9 +189,9 @@ echo "Update /etc/hosts, .ssh/known_hosts file."
 cp roles/kubeconfig/defaults/main.yml.ori roles/kubeconfig/defaults/main.yml
 
 if [ "$KUBE_CONTROL_HOSTS" -eq 1 ]; then
-  sed -i "s/{MASTER1_NODE_PUBLIC_IP/$MASTER1_NODE_PUBLIC_IP/g" roles/kubeconfig/defaults/main.yml
+  sed -i "s/{MASTER1_NODE_PUBLIC_IP}/$MASTER1_NODE_PUBLIC_IP/g" roles/kubeconfig/defaults/main.yml
 elif [ "$KUBE_CONTROL_HOSTS" -gt 1 ]; then
-  sed -i "s/{MASTER1_NODE_PUBLIC_IP/$LOADBALANCER_DOMAIN/g" roles/kubeconfig/defaults/main.yml
+  sed -i "s/{MASTER1_NODE_PUBLIC_IP}/$LOADBALANCER_DOMAIN/g" roles/kubeconfig/defaults/main.yml
 fi
 
 rm -rf hosts.yaml

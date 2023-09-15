@@ -207,6 +207,23 @@ ssh-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
 echo "Update /etc/hosts, .ssh/known_hosts file."
 
 # Container Platform configuration settings
+cp roles/kubeconfig1/defaults/main.yml.ori roles/kubeconfig1/defaults/main.yml
+cp roles/kubeconfig2/defaults/main.yml.ori roles/kubeconfig2/defaults/main.yml
+
+for ((i=0;i<2;i++))
+  do
+    j=$((i+1));
+    eval "kube_control_hosts=\${CLUSTER${j}_KUBE_CONTROL_HOSTS}";
+    eval "master1_node_public_ip=\${CLUSTER${j}_MASTER1_NODE_PUBLIC_IP}";
+    eval "loadbalancer_domain=\${CLUSTER${j}_LOADBALANCER_DOMAIN}";
+
+    if [ "$kube_control_hosts" -eq 1 ]; then
+      sed -i "s/{MASTER1_NODE_PUBLIC_IP}/$master1_node_public_ip/g" roles/kubeconfig${j}/defaults/main.yml
+    elif [ "$kube_control_hosts" -gt 1 ]; then
+      sed -i "s/{MASTER1_NODE_PUBLIC_IP}/$loadbalancer_domain/g" roles/kubeconfig${j}/defaults/main.yml
+    fi
+done
+
 rm -rf hosts.yaml
 
 cat <<EOF > hosts.yaml
