@@ -200,10 +200,10 @@ for ((i=0;i<2;i++))
     if [ "$HOST_CHECK" == "" ]; then
       echo "$master1_node_private_ip $master1_node_hostname" | sudo tee -a /etc/hosts
       echo "$master1_node_private_ip $master1_node_hostname" | tee -a hostlist
+      ssh-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
     fi
 done
 
-ssh-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
 echo "Update /etc/hosts, .ssh/known_hosts file."
 
 # Container Platform configuration settings
