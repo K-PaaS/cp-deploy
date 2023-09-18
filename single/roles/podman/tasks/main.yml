@@ -13,8 +13,8 @@
     echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /' | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
     curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/Release.key | apt-key add -
     apt-get update
-    "echo 'N\nN' > {{ home_dir_path.stdout }}/cp-deployment/tmp_podman"
-    "apt-get install -y podman < {{ home_dir_path.stdout }}/cp-deployment/tmp_podman"
+    echo 'N\nN' > {{ home_dir_path.stdout }}/cp-deployment/tmp_podman
+    apt-get install -y podman < {{ home_dir_path.stdout }}/cp-deployment/tmp_podman
   when: podman_install.stdout == ""
   args:
     warn: false
@@ -25,32 +25,36 @@
     state: absent
 
 - name: Get ingress-nginx svc external-ip
+  become: false
   shell: kubectl get svc ingress-nginx-controller -n ingress-nginx | awk 'NR == 2 {print $4}'
   register: external_ip
 
 - name: Add registries.conf
   shell: |
-    cat <<EOF >> /etc/containers/registries.conf.d/01-unqualified.conf
+    cat <<EOF > /etc/containers/registries.conf.d/01-unqualified.conf
     unqualified-search-registries = ['docker.io', 'quay.io']
     EOF
-    cat <<EOF >> /etc/containers/registries.conf.d/10-docker.io.conf
+    cat <<EOF > /etc/containers/registries.conf.d/10-docker.io.conf
     [[registry]]
     prefix = "docker.io"
     insecure = false
     blocked = false
     location = "docker.io"
     EOF
-    cat <<EOF >> /etc/containers/registries.conf.d/10-quay.io.conf
+    cat <<EOF > /etc/containers/registries.conf.d/10-quay.io.conf
     [[registry]]
     prefix = "quay.io"
     insecure = false
     blocked = false
     location = "quay.io"
     EOF
-    "cat <<EOF >> /etc/containers/registries.conf.d/10-harbor.{{ external_ip.stdout }}.nip.io.conf"
+    cat <<EOF > /etc/containers/registries.conf.d/10-harbor.{{ external_ip.stdout }}.nip.io.conf
     [[registry]]
-    "prefix = \"harbor.{{ external_ip.stdout }}.nip.io\""
+    prefix = "harbor.{{ external_ip.stdout }}.nip.io"
     insecure = true
     blocked = false
-    "location = \"harbor.{{ external_ip.stdout }}.nip.io\""
+    location = "harbor.{{ external_ip.stdout }}.nip.io"
     EOF
+
+- name: Restart podman service
+  shell: systemctl restart podman
