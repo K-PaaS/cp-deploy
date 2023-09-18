@@ -156,7 +156,7 @@
     - { role: kubespray-defaults }
     - { role: cp/nfs }
 
-- hosts: kube_control_plane
+- hosts: k8s_cluster
   gather_facts: False
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
   environment: "{{ proxy_disable_env }}"

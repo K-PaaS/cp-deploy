@@ -35,6 +35,24 @@
   roles:
     - { role: cp-install }
 
+- hosts: kube_control_plane[0]
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubeconfig1 }
+
+- hosts: kube_control_plane[1]
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubeconfig2 }
+
+- hosts: localhost
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: kubeconfig-merge }
+
 - hosts: localhost
   gather_facts: False
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
@@ -47,14 +65,20 @@
   roles:
     - { role: helm }
 
-- hosts: kube_control_plane[0]
+- hosts: localhost
   gather_facts: False
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
   roles:
-    - { role: kubeconfig1 }
+    - { role: podman }
 
-- hosts: kube_control_plane[1]
+- hosts: localhost
   gather_facts: False
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
   roles:
-    - { role: kubeconfig2 }
+    - { role: istio }
+
+- hosts: localhost
+  gather_facts: False
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  roles:
+    - { role: istio-multi }
