@@ -255,22 +255,12 @@ if [ "$KUBE_CONTROL_HOSTS" -gt 1 ]; then
     do
       j=$((i+1));
       
-      if [ "$ETCD_TYPE" == "external" ]; then
-        if [ "${j}" -eq 1 ]; then
-          ETCD_URL="https://{ETCD${j}_NODE_PRIVATE_IP}:2379";
-          ETCD_IPS="  - \"{ETCD${j}_NODE_PRIVATE_IP}\"";
-        else
-          ETCD_URL="${ETCD_URL},https://{ETCD${j}_NODE_PRIVATE_IP}:2379";
-          ETCD_IPS="${ETCD_IPS}\n  - \"{ETCD${j}_NODE_PRIVATE_IP}\"";
-        fi
-      elif [ "$ETCD_TYPE" == "stacked" ]; then
-        if [ "${j}" -eq 1 ]; then
-          ETCD_URL="https://{MASTER${j}_NODE_PRIVATE_IP}:2379";
-          ETCD_IPS="  - \"{MASTER${j}_NODE_PRIVATE_IP}\"";
-        else
-          ETCD_URL="${ETCD_URL},https://{MASTER${j}_NODE_PRIVATE_IP}:2379";
-          ETCD_IPS="${ETCD_IPS}\n  - \"{MASTER${j}_NODE_PRIVATE_IP}\"";
-        fi
+      if [ "${j}" -eq 1 ]; then
+        ETCD_URL="https://{ETCD${j}_NODE_PRIVATE_IP}:2379";
+        ETCD_IPS="  - \"{ETCD${j}_NODE_PRIVATE_IP}\"";
+      else
+        ETCD_URL="${ETCD_URL},https://{ETCD${j}_NODE_PRIVATE_IP}:2379";
+        ETCD_IPS="${ETCD_IPS}\n  - \"{ETCD${j}_NODE_PRIVATE_IP}\"";
       fi
   done
 
@@ -282,7 +272,13 @@ if [ "$KUBE_CONTROL_HOSTS" -gt 1 ]; then
     do
       j=$((i+1));
       eval "etcd_node_private_ip=\${ETCD${j}_NODE_PRIVATE_IP}";
-      sed -i "s/{ETCD${j}_NODE_PRIVATE_IP}/$etcd_node_private_ip/g" inventory/mycluster/group_vars/all/all.yml
+      eval "master_node_private_ip=\${MASTER${j}_NODE_PRIVATE_IP}";
+
+      if [ "$ETCD_TYPE" == "external" ]; then
+        sed -i "s/{ETCD${j}_NODE_PRIVATE_IP}/$etcd_node_private_ip/g" inventory/mycluster/group_vars/all/all.yml
+      elif [ "$ETCD_TYPE" == "stacked" ]; then
+	sed -i "s/{ETCD${j}_NODE_PRIVATE_IP}/$master_node_private_ip/g" inventory/mycluster/group_vars/all/all.yml
+      fi
   done
 fi
 
