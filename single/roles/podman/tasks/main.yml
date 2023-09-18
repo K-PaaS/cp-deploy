@@ -16,8 +16,6 @@
     echo 'N\nN' > {{ home_dir_path.stdout }}/cp-deployment/tmp_podman
     apt-get install -y podman < {{ home_dir_path.stdout }}/cp-deployment/tmp_podman
   when: podman_install.stdout == ""
-  args:
-    warn: false
 
 - name: Delete tmp file
   file:

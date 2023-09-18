@@ -65,7 +65,7 @@ for ((x=0;x<2;x++))
       elif [ ! "$ETCD_TYPE" == "external" ] && [ ! "$ETCD_TYPE" == "stacked" ]; then
         echo "Cluster${y} ETCD_TYPE must be 'external' or 'stacked'."
         result=2
-      elif [ "$ETCD_TYPE" == "external" ] || [ "$ETCD_TYPE" == "stacked" ]; then
+      elif [ "$ETCD_TYPE" == "external" ]; then
         for ((i=0;i<$KUBE_CONTROL_HOSTS;i++))
           do
             j=$((i+1));

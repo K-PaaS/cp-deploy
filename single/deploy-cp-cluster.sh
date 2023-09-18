@@ -62,7 +62,7 @@ if [ "$KUBE_CONTROL_HOSTS" -gt 1 ]; then
   elif [ ! "$ETCD_TYPE" == "external" ] && [ ! "$ETCD_TYPE" == "stacked" ]; then
     echo "ETCD_TYPE must be 'external' or 'stacked'."
     result=2
-  elif [ "$ETCD_TYPE" == "external" ] || [ "$ETCD_TYPE" == "stacked" ]; then
+  elif [ "$ETCD_TYPE" == "external" ]; then
     for ((i=0;i<$KUBE_CONTROL_HOSTS;i++))
       do
         j=$((i+1));

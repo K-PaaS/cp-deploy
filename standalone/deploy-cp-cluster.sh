@@ -62,7 +62,7 @@ if [ "$KUBE_CONTROL_HOSTS" -gt 1 ]; then
   elif [ ! "$ETCD_TYPE" == "external" ] && [ ! "$ETCD_TYPE" == "stacked" ]; then
     echo "ETCD_TYPE must be 'external' or 'stacked'."
     result=2
-  elif [ "$ETCD_TYPE" == "external" ] || [ "$ETCD_TYPE" == "stacked" ]; then
+  elif [ "$ETCD_TYPE" == "external" ]; then
     for ((i=0;i<$KUBE_CONTROL_HOSTS;i++))
       do
         j=$((i+1));
@@ -254,13 +254,23 @@ if [ "$KUBE_CONTROL_HOSTS" -gt 1 ]; then
   for ((i=0;i<$KUBE_CONTROL_HOSTS;i++))
     do
       j=$((i+1));
-
-      if [ "${j}" -eq 1 ]; then
-        ETCD_URL="https://{ETCD${j}_NODE_PRIVATE_IP}:2379";
-        ETCD_IPS="  - \"{ETCD${j}_NODE_PRIVATE_IP}\"";
-      else
-        ETCD_URL="${ETCD_URL},https://{ETCD${j}_NODE_PRIVATE_IP}:2379";
-        ETCD_IPS="${ETCD_IPS}\n  - \"{ETCD${j}_NODE_PRIVATE_IP}\"";
+      
+      if [ "$ETCD_TYPE" == "external" ]; then
+        if [ "${j}" -eq 1 ]; then
+          ETCD_URL="https://{ETCD${j}_NODE_PRIVATE_IP}:2379";
+          ETCD_IPS="  - \"{ETCD${j}_NODE_PRIVATE_IP}\"";
+        else
+          ETCD_URL="${ETCD_URL},https://{ETCD${j}_NODE_PRIVATE_IP}:2379";
+          ETCD_IPS="${ETCD_IPS}\n  - \"{ETCD${j}_NODE_PRIVATE_IP}\"";
+        fi
+      elif [ "$ETCD_TYPE" == "stacked" ]; then
+        if [ "${j}" -eq 1 ]; then
+          ETCD_URL="https://{MASTER${j}_NODE_PRIVATE_IP}:2379";
+          ETCD_IPS="  - \"{MASTER${j}_NODE_PRIVATE_IP}\"";
+        else
+          ETCD_URL="${ETCD_URL},https://{MASTER${j}_NODE_PRIVATE_IP}:2379";
+          ETCD_IPS="${ETCD_IPS}\n  - \"{MASTER${j}_NODE_PRIVATE_IP}\"";
+        fi
       fi
   done
 
