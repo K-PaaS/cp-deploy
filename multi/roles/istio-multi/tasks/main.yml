@@ -1,0 +1,148 @@
+---
+- name: Get home dir path
+  become: false
+  shell: "echo $HOME"
+  register: home_dir_path
+
+- name: Install istio-cni (cluster1)
+  become: false
+  shell: |
+    helm repo add istio https://istio-release.storage.googleapis.com/charts --kube-context=cluster1
+    helm install istio-cni istio/cni -n istio-system --kube-context=cluster1
+
+- name: Install istio-cni (cluster2)
+  become: false
+  shell: |
+    helm repo add istio https://istio-release.storage.googleapis.com/charts --kube-context=cluster2
+    helm install istio-cni istio/cni -n istio-system --kube-context=cluster2
+
+- name: Get istio-sidecar-injector configmap .data.values (cluster1)
+  become: false
+  shell: kubectl get configmap istio-sidecar-injector -n istio-system -o json | jq .data.values | sed -E 's/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: false/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: true/g' --context=cluster1
+  register: configmap_value
+
+- name: Modify istio configmap (cluster1)
+  become: false
+  shell: |
+    kubectl patch configmap istio-sidecar-injector --patch '{"data": { "values": {{ configmap_value.stdout }} }}' -n istio-system --context=cluster1
+
+- name: Get istio-sidecar-injector configmap .data.values (cluster2)
+  become: false
+  shell: kubectl get configmap istio-sidecar-injector -n istio-system -o json | jq .data.values | sed -E 's/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: false/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: true/g' --context=cluster2
+  register: configmap_value
+
+- name: Modify istio configmap (cluster2)
+  become: false
+  shell: |
+    kubectl patch configmap istio-sidecar-injector --patch '{"data": { "values": {{ configmap_value.stdout }} }}' -n istio-system --context=cluster2
+
+- name: Download step
+  become: false
+  get_url:
+    url: https://github.com/smallstep/cli/releases/download/v0.24.4/step_linux_0.24.4_amd64.tar.gz
+    dest: {{ home_dir_path.stdout }}/step.tar.gz
+
+- name: Unarchive step
+  become: false
+  shell: |
+    tar zxvf step.tar.gz
+    mv step_0.24.4/bin/step /usr/local/bin
+    chmod +x /usr/local/bin/step
+
+- name: Create certs/cluster1 dir
+  become: false
+  file:
+    path: {{ home_dir_path.stdout }}/certs/cluster1
+    state: directory
+
+- name: Create certs/cluster2 dir
+  become: false
+  file:
+    path: {{ home_dir_path.stdout }}/certs/cluster2
+    state: directory
+
+- name: Crate rootCA certificate
+  become: false
+  shell: step certificate create root.istio.io {{ home_dir_path.stdout }}/certs/root-cert.pem {{ home_dir_path.stdout }}/certs/root-ca.key --profile root-ca --no-password --insecure --san root.istio.io --not-after 87600h --kty RSA
+
+- name: Create certificate (cluster1)
+  become: false
+  shell: |
+    step certificate create cluster1.intermediate.istio.io {{ home_dir_path.stdout }}/certs/cluster1/ca-cert.pem {{ home_dir_path.stdout }}/certs/cluster1/ca-key.pem --ca {{ home_dir_path.stdout }}/certs/root-cert.pem --ca-key {{ home_dir_path.stdout }}/certs/root-ca.key --profile intermediate-ca --not-after 87600h --no-password --insecure --san cluster1.intermediate.istio.io --kty RSA
+    cat {{ home_dir_path.stdout }}/certs/cluster1/ca-cert.pem {{ home_dir_path.stdout }}/certs/root-cert.pem > {{ home_dir_path.stdout }}/certs/cluster1/cert-chain.pem
+
+- name: Create certificate (cluster2)
+  become: false
+  shell: |
+    step certificate create cluster2.intermediate.istio.io {{ home_dir_path.stdout }}/certs/cluster2/ca-cert.pem {{ home_dir_path.stdout }}/certs/cluster2/ca-key.pem --ca {{ home_dir_path.stdout }}/certs/root-cert.pem --ca-key {{ home_dir_path.stdout }}/certs/root-ca.key --profile intermediate-ca --not-after 87600h --no-password --insecure --san cluster2.intermediate.istio.io --kty RSA
+    cat {{ home_dir_path.stdout }}/certs/cluster2/ca-cert.pem {{ home_dir_path.stdout }}/certs/root-cert.pem > {{ home_dir_path.stdout }}/certs/cluster2/cert-chain.pem
+
+- name: Add label istio-system ns network (cluster1)
+  become: false
+  shell: kubectl label topology.istio.io/network=network1 namespace istio-system --context=cluster1
+
+- name: Add label istio-system ns network (cluster2)
+  become: false
+  shell: kubectl label topology.istio.io/network=network2 namespace istio-system --context=cluster2
+
+- name: Create CA certs secret (cluster1)
+  become: false
+  shell: kubectl create secret generic cacerts -n istio-system --context=cluster1 --from-file={{ home_dir_path.stdout }}/certs/cluster1/ca-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster1/ca-key.pem --from-file={{ home_dir_path.stdout }}/certs/root-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster1/cert-chain.pem
+
+- name: Create CA certs secret (cluster2)
+  become: false
+  shell: kubectl create secret generic cacerts -n istio-system --context=cluster1 --from-file={{ home_dir_path.stdout }}/certs/cluster1/ca-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster1/ca-key.pem --from-file={{ home_dir_path.stdout }}/certs/root-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster1/cert-chain.pem
+
+- name: Set istio config (cluster1)
+  become: false
+  shell: |
+    cat <<EOF >
+    apiVersion: install.istio.io/v1alpha1
+    kind: IstioOperator
+    spec:
+      values:
+        global:
+          meshID: mesh1
+          multiCluster:
+            clustername: cluster1
+          network: network1
+    EOF | istio install -f - --context=cluster1
+
+- name: Install east-west gateway (cluster1)
+  become: false
+  shell: {{ home_dir_path.stdout }}/istio-1.16.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster1 --network network1 | istioctl install -y -f - --context=cluster1
+
+- name: expose service (cluster1)
+  become: false
+  shell: kubectl apply -f {{ home_dir_path.stdout }}/istio-1.16.0/samples/multicluster/expose-services.yaml -n istio-system --context=cluster1
+
+- name: Set istio config (cluster2)
+  become: false
+  shell: |
+    cat <<EOF >
+    apiVersion: install.istio.io/v1alpha1
+    kind: IstioOperator
+    spec:
+      values:
+        global:
+          meshID: mesh1
+          multiCluster:
+            clustername: cluster2
+          network: network2
+    EOF | istio install -f - --context=cluster2
+
+- name: Install east-west gateway (cluster2)
+  become: false
+  shell: {{ home_dir_path.stdout }}/istio-1.16.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster2 --network network2 | istioctl install -y -f - --context=cluster2
+
+- name: expose service (cluster1)
+  become: false
+  shell: kubectl apply -f {{ home_dir_path.stdout }}/istio-1.16.0/samples/multicluster/expose-services.yaml -n istio-system --context=cluster2
+
+- name: Enable endpoint discovery (cluster1)
+  become: false
+  shell: istioctl x create-remote-secret --name=cluster2 --context=cluster2 | kubectl apply -f - --context=cluster1
+
+- name: Enable endpoint discovery (cluster2)
+  become: false
+  shell: istioctl x create-remote-secret --name=cluster1 --context=cluster1 | kubectl apply -f - --context=cluster2
