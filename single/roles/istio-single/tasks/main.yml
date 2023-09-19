@@ -12,7 +12,8 @@
 
 - name: Get istio-sidecar-injector configmap .data.values
   become: false
-  shell: kubectl get configmap istio-sidecar-injector -n istio-system -o json | jq .data.values | sed -E 's/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: false/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: true/g'
+  shell: |
+    kubectl get configmap istio-sidecar-injector -n istio-system -o json | jq .data.values | sed -E 's/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: false/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: true/g'
   register: configmap_value
 
 - name: Modify istio configmap

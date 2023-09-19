@@ -6,13 +6,14 @@
 
 - name: Check istioctl installation
   become: false
-  shell: ls | grep istio-1.16.0
+  shell: ls | grep {{home_dir_path.stdout }}/istio-1.16.0
   register: istio_dir
   ignore_errors: true
 
 - name: Download istioctl
   become: false
   shell: |
+    cd {{ home_dir_path.stdout }}
     curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.16.0 TARGET_ARCH=x86_64 sh -
   when: istio_dir.stdout == ""
 

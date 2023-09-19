@@ -18,7 +18,8 @@
 
 - name: Get istio-sidecar-injector configmap .data.values (cluster1)
   become: false
-  shell: kubectl get configmap istio-sidecar-injector -n istio-system -o json | jq .data.values | sed -E 's/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: false/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: true/g' --context=cluster1
+  shell: |
+    kubectl get configmap istio-sidecar-injector -n istio-system -o json | jq .data.values | sed -E 's/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: false/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: true/g' --context=cluster1
   register: configmap_value
 
 - name: Modify istio configmap (cluster1)
@@ -28,7 +29,8 @@
 
 - name: Get istio-sidecar-injector configmap .data.values (cluster2)
   become: false
-  shell: kubectl get configmap istio-sidecar-injector -n istio-system -o json | jq .data.values | sed -E 's/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: false/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: true/g' --context=cluster2
+  shell: |
+    kubectl get configmap istio-sidecar-injector -n istio-system -o json | jq .data.values | sed -E 's/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: false/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: true/g' --context=cluster2
   register: configmap_value
 
 - name: Modify istio configmap (cluster2)
@@ -79,11 +81,11 @@
 
 - name: Add label istio-system ns network (cluster1)
   become: false
-  shell: kubectl label topology.istio.io/network=network1 namespace istio-system --context=cluster1
+  shell: kubectl label namespace istio-system --context=cluster1 topology.istio.io/network=network1
 
 - name: Add label istio-system ns network (cluster2)
   become: false
-  shell: kubectl label topology.istio.io/network=network2 namespace istio-system --context=cluster2
+  shell: kubectl label namespace istio-system --context=cluster2 topology.istio.io/network=network2
 
 - name: Create CA certs secret (cluster1)
   become: false
