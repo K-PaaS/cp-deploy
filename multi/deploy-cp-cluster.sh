@@ -197,13 +197,13 @@ for ((i=0;i<2;i++))
   do
     j=$((i+1));
     eval "master1_node_hostname=\${CLUSTER${j}_MASTER1_NODE_HOSTNAME}";
-    eval "master1_node_private_ip=\${CLUSTER${j}_MASTER1_NODE_PRIVATE_IP}";
+    eval "master1_node_public_ip=\${CLUSTER${j}_MASTER1_NODE_PUBLIC_IP}";
 
-    HOST_CHECK=$(sudo cat /etc/hosts | grep "$master1_node_private_ip $master1_node_hostname")
+    HOST_CHECK=$(sudo cat /etc/hosts | grep "$master1_node_public_ip $master1_node_hostname")
 
     if [ "$HOST_CHECK" == "" ]; then
-      echo "$master1_node_private_ip $master1_node_hostname" | sudo tee -a /etc/hosts
-      echo "$master1_node_private_ip $master1_node_hostname" | tee -a hostlist
+      echo "$master1_node_public_ip $master1_node_hostname" | sudo tee -a /etc/hosts
+      echo "$master1_node_public_ip $master1_node_hostname" | tee -a hostlist
       ssh-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
     fi
 done

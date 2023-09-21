@@ -175,11 +175,11 @@ if [ "$PIP3_PACKAGE_INSTALL" == "" ]; then
 fi
 
 # Update /etc/hosts, .ssh/known_hosts
-HOST_CHECK=$(sudo cat /etc/hosts | grep "$MASTER1_NODE_PRIVATE_IP $MASTER1_NODE_HOSTNAME")
+HOST_CHECK=$(sudo cat /etc/hosts | grep "$MASTER1_NODE_PUBLIC_IP $MASTER1_NODE_HOSTNAME")
 
 if [ "$HOST_CHECK" == "" ]; then
-  echo "$MASTER1_NODE_PRIVATE_IP $MASTER1_NODE_HOSTNAME" | sudo tee -a /etc/hosts
-  echo "$MASTER1_NODE_PRIVATE_IP $MASTER1_NODE_HOSTNAME" | tee -a hostlist
+  echo "$MASTER1_NODE_PUBLIC_IP $MASTER1_NODE_HOSTNAME" | sudo tee -a /etc/hosts
+  echo "$MASTER1_NODE_PUBLIC_IP $MASTER1_NODE_HOSTNAME" | tee -a hostlist
   ssh-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
 fi
 
