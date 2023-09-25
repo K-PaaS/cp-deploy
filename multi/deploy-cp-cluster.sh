@@ -159,6 +159,18 @@ for ((x=0;x<2;x++))
       return $result
     fi
 
+    if [ "$INGRESS_NGINX_PUBLIC_IP" == "" ]; then
+      echo "INGRESS_NGINX_PUBLIC_IP is empty. Enter a variable."
+      result=2
+    elif [[ ! "$INGRESS_NGINX_PUBLIC_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      echo "INGRESS_NGINX_PUBLIC_IP is not a value in IP format. Enter a IP format variable."
+      result=2
+    fi
+
+    if [ "$result" == 2 ]; then
+      return $result
+    fi
+
     if [ "${x}" -eq 0 ]; then
       CLUSTER1_KUBE_CONTROL_HOSTS=$KUBE_CONTROL_HOSTS
       CLUSTER1_MASTER1_NODE_HOSTNAME=$MASTER1_NODE_HOSTNAME
@@ -204,7 +216,7 @@ for ((i=0;i<2;i++))
     if [ "$HOST_CHECK" == "" ]; then
       echo "$master1_node_public_ip $master1_node_hostname" | sudo tee -a /etc/hosts
       echo "$master1_node_public_ip $master1_node_hostname" | tee -a hostlist
-      ssh-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
+      ssh-keyscan -t rsa -f hostlist > ~/.ssh/known_hosts
     fi
 done
 
@@ -227,6 +239,9 @@ for ((i=0;i<2;i++))
       sed -i "s/{MASTER1_NODE_PUBLIC_IP}/$loadbalancer_domain/g" roles/kubeconfig${j}/defaults/main.yml
     fi
 done
+
+cp roles/podman/defaults/main.yml.ori roles/podman/defaults/main.yml
+sed -i "s/{INGRESS_NGINX_PUBLIC_IP}/$INGRESS_NGINX_PUBLIC_IP/g" roles/podman/defaults/main.yml
 
 rm -rf hosts.yaml
 

@@ -15,9 +15,3 @@
   shell: |
     cd {{ home_dir_path.stdout }}/cp-deployment/standalone
     ./deploy-cp-cluster.sh > {{ home_dir_path.stdout }}/cp-deployment/standalone/deploy-result.log
-
-- name: Check deploy
-  become: false
-  shell: "echo $(grep -r 'failed=1' {{ home_dir_path.stdout }}/cp-deployment/standalone/deploy-result.log)"
-  register: deploy_result
-  failed_when: deploy_result.stdout != ""

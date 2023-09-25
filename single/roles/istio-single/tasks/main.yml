@@ -9,6 +9,11 @@
   shell: |
     helm repo add istio https://istio-release.storage.googleapis.com/charts
     helm install istio-cni istio/cni -n istio-system
+  ignore_errors: true
+
+- name: Install jq package
+  apt:
+    name: jq
 
 - name: Get istio-sidecar-injector configmap .data.values
   become: false

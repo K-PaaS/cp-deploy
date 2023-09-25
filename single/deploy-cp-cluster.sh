@@ -156,6 +156,18 @@ if [ "$result" == 2 ]; then
   return $result
 fi
 
+if [ "$INGRESS_NGINX_PUBLIC_IP" == "" ]; then
+  echo "INGRESS_NGINX_PUBLIC_IP is empty. Enter a variable."
+  result=2
+elif [[ ! "$INGRESS_NGINX_PUBLIC_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "INGRESS_NGINX_PUBLIC_IP is not a value in IP format. Enter a IP format variable."
+  result=2
+fi
+
+if [ "$result" == 2 ]; then
+  return $result
+fi
+
 echo "Variable check completed."
 
 # Installing Ubuntu, PIP3 Package
@@ -180,7 +192,7 @@ HOST_CHECK=$(sudo cat /etc/hosts | grep "$MASTER1_NODE_PUBLIC_IP $MASTER1_NODE_H
 if [ "$HOST_CHECK" == "" ]; then
   echo "$MASTER1_NODE_PUBLIC_IP $MASTER1_NODE_HOSTNAME" | sudo tee -a /etc/hosts
   echo "$MASTER1_NODE_PUBLIC_IP $MASTER1_NODE_HOSTNAME" | tee -a hostlist
-  ssh-keyscan -t rsa -f hostlist >> ~/.ssh/known_hosts
+  ssh-keyscan -t rsa -f hostlist > ~/.ssh/known_hosts
 fi
 
 echo "Update /etc/hosts, .ssh/known_hosts file."
@@ -193,6 +205,9 @@ if [ "$KUBE_CONTROL_HOSTS" -eq 1 ]; then
 elif [ "$KUBE_CONTROL_HOSTS" -gt 1 ]; then
   sed -i "s/{MASTER1_NODE_PUBLIC_IP}/$LOADBALANCER_DOMAIN/g" roles/kubeconfig/defaults/main.yml
 fi
+
+cp roles/podman/defaults/main.yml.ori roles/podman/defaults/main.yml
+sed -i "s/{INGRESS_NGINX_PUBLIC_IP}/$INGRESS_NGINX_PUBLIC_IP/g" roles/podman/defaults/main.yml
 
 rm -rf hosts.yaml
 

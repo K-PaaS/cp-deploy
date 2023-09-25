@@ -4,29 +4,6 @@
   shell: "echo $HOME"
   register: home_dir_path
 
-- name: Download krew
-  become: false
-  get_url:
-    url: https://github.com/kubernetes-sigs/krew/releases/download/v0.4.4/krew-linux_amd64.tar.gz
-    dest: "{{ home_dir_path.stdout }}/krew-linux_amd64.tar.gz"
-
-- name: Unarchive krew
-  become: false
-  shell: |
-    tar zxvf {{ home_dir_path.stdout }}/krew-linux_amd64.tar.gz
-
-- name: Install krew
-  become: false
-  shell: |
-    ./krew-linux_amd64 install krew
-    echo 'export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"' >> {{ home_dir_path.stdout }}/.bashrc
-    source {{ home_dir_path.stdout }}/.bashrc
-    
-
-- name: Install konfig
-  become: false
-  shell: kubectl krew install konfig
-
 - name: Merge kubeconfig
   become: false
-  shell: kubectl konfig merge {{ home_dir_path.stdout }}/.kube/config1 {{ home_dir_path.stdout }}/.kube/config2 > {{ home_dir_path.stdout }}/.kube/config
+  shell: KUBECONFIG={{ home_dir_path.stdout }}/.kube/config1:{{ hoem_dir_path.stdout}}/.kube/config2 kubectl config view --flatten > {{ home_dir_path.stdout }}/.kube/config
