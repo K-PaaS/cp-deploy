@@ -49,3 +49,6 @@ export NFS_SERVER_PRIVATE_IP=
 
 # MetalLB Variable (eg. x.x.x.x-x.x.x.x)
 export METALLB_IP_RANGE=
+
+# Ingress Nginx Controller Service Public IP Variable
+export INGRESS_NGINX_PUBLIC_IP=

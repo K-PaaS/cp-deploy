@@ -156,6 +156,18 @@ if [ "$result" == 2 ]; then
   return $result
 fi
 
+if [ "$INGRESS_NGINX_PUBLIC_IP" == "" ]; then
+  echo "INGRESS_NGINX_PUBLIC_IP is empty. Enter a variable."
+  result=2
+elif [[ ! "$INGRESS_NGINX_PUBLIC_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "INGRESS_NGINX_PUBLIC_IP is not a value in IP format. Enter a IP format variable."
+  result=2
+fi
+
+if [ "$result" == 2 ]; then
+  return $result
+fi
+
 # Installing Ubuntu, PIP3 Package
 PIP3_INSTALL=$(dpkg -l | grep python3-pip | awk '{print $2}')
 
@@ -174,14 +186,15 @@ fi
 
 # Container Platform configuration settings
 rm -rf inventory/mycluster/hosts.yaml
-cp inventory/mycluster/inventory.ini.ori inventory/mycluster/inventory.ini
-cp roles/kubernetes-apps/metrics_server/defaults/main.yml.ori roles/kubernetes-apps/metrics_server/defaults/main.yml
-cp roles/kubernetes/control-plane/tasks/kubeadm-setup.yml.ori roles/kubernetes/control-plane/tasks/kubeadm-setup.yml
-cp roles/container-engine/cri-o/defaults/main.yml.ori roles/container-engine/cri-o/defaults/main.yml
 cp inventory/mycluster/group_vars/all/all.yml.ori inventory/mycluster/group_vars/all/all.yml
 cp inventory/mycluster/group_vars/k8s_cluster/addons.yml.ori inventory/mycluster/group_vars/k8s_cluster/addons.yml
-cp ../applications/nfs-provisioner-4.0.0/deployment.yaml.ori ../applications/nfs-provisioner-4.0.0/deployment.yaml
+cp inventory/mycluster/inventory.ini.ori inventory/mycluster/inventory.ini
+cp roles/container-engine/cri-o/defaults/main.yml.ori roles/container-engine/cri-o/defaults/main.yml
+cp roles/cp/podman/defaults/main.yml.ori roles/cp/podman/defaults/main.yml
 cp roles/cp/storage/defaults/main.yml.ori roles/cp/storage/defaults/main.yml
+cp roles/kubernetes/control-plane/tasks/kubeadm-setup.yml.ori roles/kubernetes/control-plane/tasks/kubeadm-setup.yml
+cp roles/kubernetes-apps/metrics_server/defaults/main.yml.ori roles/kubernetes-apps/metrics_server/defaults/main.yml
+cp ../applications/nfs-provisioner-4.0.0/deployment.yaml.ori ../applications/nfs-provisioner-4.0.0/deployment.yaml
 
 ARRAY_MASTER_NODE_IP=""
 ARRAY_ETCD_NODE_IP=""
@@ -285,6 +298,7 @@ fi
 sed -i "s/{METALLB_IP_RANGE}/$METALLB_IP_RANGE/g" inventory/mycluster/group_vars/k8s_cluster/addons.yml
 sed -i "s/{NFS_SERVER_PRIVATE_IP}/$NFS_SERVER_PRIVATE_IP/g" ../applications/nfs-provisioner-4.0.0/deployment.yaml
 sed -i "s/{STORAGE_TYPE}/$STORAGE_TYPE/g" roles/cp/storage/defaults/main.yml
+sed -i "s/{INGRESS_NGINX_PUBLIC_IP}/$INGRESS_NGINX_PUBLIC_IP/g" roles/cp/podman/defaults/main.yml
 
 if [ "$KUBE_CONTROL_HOSTS" -eq 1 ]; then
   declare -a IPS=($ARRAY_MASTER_NODE_IP $ARRAY_WORKER_NODE_IP)

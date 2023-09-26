@@ -17,19 +17,14 @@
     path: "tmp_podman"
     state: absent
 
-- name: Get ingress-nginx-controller external ip
-  become: false
-  shell: kubectl get svc ingress-nginx-controller -n ingress-nginx | awk 'NR == 2 {print $4}'
-  register: external_ip
-
 - name: Add registries.conf
   shell: |
-    cat <<EOF > /etc/containers/registries.conf.d/10-harbor.{{ external_ip.stdout }}.nip.io.conf
+    cat <<EOF > /etc/containers/registries.conf.d/10-harbor.{{ ingress_nginx_public_ip }}.nip.io.conf
     [[registry]]
-    prefix = "harbor.{{ external_ip.stdout }}.nip.io"
+    prefix = "harbor.{{ ingress_nginx_public_ip }}.nip.io"
     insecure = true
     blocked = false
-    location = "harbor.{{ external_ip.stdout }}.nip.io"
+    location = "harbor.{{ ingress_nginx_public_ip }}.nip.io"
     EOF
 
 - name: Restart podman service
