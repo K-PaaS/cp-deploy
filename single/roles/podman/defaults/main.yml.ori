@@ -1,1 +1,1 @@
-ingress_nginx_public_ip: {INGRESS_NGINX_PUbLIC_IP}
+ingress_nginx_public_ip: {INGRESS_NGINX_PUBLIC_IP}

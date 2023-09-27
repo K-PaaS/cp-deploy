@@ -2,20 +2,20 @@
 - name: Setting istio multi cluster global values (meshID)
   become: false
   replace:
-    path: "{{ home_dir_path.stdout }}/cp-deployment/applications/kubeflow-1-7-0/common/istio-1-16/istio-install/base/install.yaml"
+    path: "{{ home_dir_path.stdout }}/cp-deployment/applications/kubeflow-1.7.0/common/istio-1-16/istio-install/base/install.yaml"
     regexp: "\"meshID\": \"\","
     replace: "\"meshID\": \"mesh1\","
 
 - name: Setting istio multi cluster global values (clusterName)
   become: false
   replace:
-    path: "{{ home_dir_path.stdout }}/cp-deployment/applications/kubeflow-1-7-0/common/istio-1-16/istio-install/base/install.yaml"
+    path: "{{ home_dir_path.stdout }}/cp-deployment/applications/kubeflow-1.7.0/common/istio-1-16/istio-install/base/install.yaml"
     regexp: "\"clusterName\": \"\","
     replace: "\"clusterName\": \"cluster{{ groups['kube_control_plane'].index(inventory_hostname)|int + 1|int }}\","
 
 - name: Setting istio multi cluster global values (network)
   become: false
   replace:
-    path: "{{ home_dir_path.stdout }}/cp-deployment/applications/kubeflow-1-7-0/common/istio-1-16/istio-install/base/install.yaml"
+    path: "{{ home_dir_path.stdout }}/cp-deployment/applications/kubeflow-1.7.0/common/istio-1-16/istio-install/base/install.yaml"
     regexp: "\"network\": \"\","
     replace: "\"network\": \"network{{ groups['kube_control_plane'].index(inventory_hostname)|int + 1|int }}\","
