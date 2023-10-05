@@ -15,12 +15,6 @@
   gather_facts: False
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
   roles:
-    - { role: cp-preinstall }
-
-- hosts: kube_control_plane[0]
-  gather_facts: False
-  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
-  roles:
     - { role: cp-install }
 
 - hosts: kube_control_plane[1]
@@ -34,12 +28,6 @@
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
   roles:
     - { role: cp-setting }
-
-- hosts: kube_control_plane[1]
-  gather_facts: False
-  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
-  roles:
-    - { role: cp-preinstall }
 
 - hosts: kube_control_plane[1]
   gather_facts: False
