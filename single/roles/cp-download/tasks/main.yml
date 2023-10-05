@@ -9,3 +9,4 @@
   git:
     repo: https://github.com/K-PaaS/cp-deploy.git
     dest: "{{ home_dir_path.stdout }}/cp-deployment/"
+  ignore_errors: yes
