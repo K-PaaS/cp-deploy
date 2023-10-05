@@ -111,22 +111,22 @@
 - name: Modify istiod deployment (cluster1)
   become: false
   shell: |
-    kubectl --context=cluster1 patch deployment istiod --patch '- name: CLUSTER_ID\n  value: cluster1' -n istio-system
+    kubectl --context=cluster1 set env deployment istiod CLUSTER_ID=cluster1 -n istio-system
 
 - name: Modify istiod deployment (cluster1)
   become: false
   shell: |
-    kubectl --context=cluster1 patch deployment istio-ingressgateway --patch '- name: CLUSTER_ID\n  value: cluster1' -n istio-system
+    kubectl --context=cluster1 set env deployment istio-ingressgateway CLUSTER_ID=cluster1 -n istio-system
 
 - name: Modify istiod deployment (cluster2)
   become: false
   shell: |
-    kubectl --context=cluster2 patch deployment istiod --patch '- name: CLUSTER_ID\n  value: cluster2' -n istio-system
+    kubectl --context=cluster2 set env deployment istiod CLUSTER_ID=cluster2 -n istio-system
 
 - name: Modify istiod deployment (cluster1)
   become: false
   shell: |
-    kubectl --context=cluster2 patch deployment istio-ingressgateway --patch '- name: CLUSTER_ID\n  value: cluster2' -n istio-system
+    kubectl --context=cluster2 set env deployment istio-ingressgateway CLUSTER_ID=cluster2 -n istio-system
 
 - name: Install east-west gateway (cluster1)
   become: false
