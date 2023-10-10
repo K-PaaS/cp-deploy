@@ -44,10 +44,16 @@
     step certificate create cluster2.intermediate.istio.io {{ home_dir_path.stdout }}/certs/cluster2/ca-cert.pem {{ home_dir_path.stdout }}/certs/cluster2/ca-key.pem --ca {{ home_dir_path.stdout }}/certs/root-cert.pem --ca-key {{ home_dir_path.stdout }}/certs/root-ca.key --profile intermediate-ca --not-after 87600h --no-password --insecure --san cluster2.intermediate.istio.io --kty RSA
     cat {{ home_dir_path.stdout }}/certs/cluster2/ca-cert.pem {{ home_dir_path.stdout }}/certs/root-cert.pem > {{ home_dir_path.stdout }}/certs/cluster2/cert-chain.pem
 
+- name: Status result
+  become: false
+  shell: |
+    echo $(kubectl --context=cluster2 get pods -A | grep -v Running | grep -v Completed | awk 'NR == 2 {print $2}')
+  register: cluster2_status
+
 - name: Check cluster2 pods status
   become: false
   shell: |
-    while ! [ echo $(kubectl --context=cluster2 get pods -A | grep -v Running | grep -v Completed | awk 'NR == 2 {print $2}') == "" ]; do sleep 10; done
+    while [ ! -z {{ cluster2_status.stdout }} ]; do sleep 10; done
 
 - name: Create CA certs secret (cluster1)
   become: false
@@ -123,8 +129,7 @@
 - name: Modify istio-ingressgateway deployment (cluster1)
   become: false
   shell: |
-    kubectl --context=cluster1 set env deployment istio-ingressgateway CLUSTER_ID=cluster1 -n istio-system
-    kubectl --context=cluster1 set env deployment istio-ingressgateway ISTIO_META_CLUSTER_ID=cluster1 -n istio-system
+    kubectl --context=cluster1 set env deployment istio-ingressgateway ISTIO_META_CLUSTER_ID=cluster1, CLUSTER_ID=cluster1 -n istio-system
     sleep 30
 
 - name: Modify istiod deployment (cluster2)
@@ -135,8 +140,7 @@
 - name: Modify istio-ingressgateway deployment (cluster1)
   become: false
   shell: |
-    kubectl --context=cluster2 set env deployment istio-ingressgateway CLUSTER_ID=cluster2 -n istio-system
-    kubectl --context=cluster2 set env deployment istio-ingressgateway ISTIO_META_CLUSTER_ID=cluster2 -n istio-system
+    kubectl --context=cluster2 set env deployment istio-ingressgateway ISTIO_META_CLUSTER_ID=cluster2, CLUSTER_ID=cluster2 -n istio-system
     sleep 30
 
 - name: Restart kubeflow pods
