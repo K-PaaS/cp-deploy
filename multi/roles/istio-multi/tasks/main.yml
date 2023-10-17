@@ -107,7 +107,10 @@
   become: false
   shell: |
     kubectl --context=cluster1 patch configmap istio-sidecar-injector --patch '{"data": { "values": {{ configmap_value1.stdout }} }}' -n istio-system
-    sleep 30
+
+- name: Pause
+  pause:
+    seconds: 30
 
 - name: Get istio-sidecar-injector configmap .data.values (cluster2)
   become: false
@@ -119,29 +122,46 @@
   become: false
   shell: |
     kubectl --context=cluster2 patch configmap istio-sidecar-injector --patch '{"data": { "values": {{ configmap_value2.stdout }} }}' -n istio-system
-    sleep 30
+
+- name: Pause
+  pause:
+    seconds: 30
 
 - name: Modify istiod deployment (cluster1)
   become: false
   shell: |
     kubectl --context=cluster1 set env deployment istiod CLUSTER_ID=cluster1 -n istio-system
 
+- name: Pause
+  pause:
+    seconds: 30
+
 - name: Modify istio-ingressgateway deployment (cluster1)
   become: false
   shell: |
-    kubectl --context=cluster1 set env deployment istio-ingressgateway ISTIO_META_CLUSTER_ID=cluster1, CLUSTER_ID=cluster1 -n istio-system
-    sleep 30
+    kubectl --context=cluster1 set env deployment istio-ingressgateway ISTIO_META_CLUSTER_ID=cluster1 CLUSTER_ID=cluster1 -n istio-system
+
+- name: Pause
+  pause:
+    seconds: 30
 
 - name: Modify istiod deployment (cluster2)
   become: false
   shell: |
     kubectl --context=cluster2 set env deployment istiod CLUSTER_ID=cluster2 -n istio-system
 
+- name: Pause
+  pause:
+    seconds: 30
+
 - name: Modify istio-ingressgateway deployment (cluster1)
   become: false
   shell: |
-    kubectl --context=cluster2 set env deployment istio-ingressgateway ISTIO_META_CLUSTER_ID=cluster2, CLUSTER_ID=cluster2 -n istio-system
-    sleep 30
+    kubectl --context=cluster2 set env deployment istio-ingressgateway ISTIO_META_CLUSTER_ID=cluster2 CLUSTER_ID=cluster2 -n istio-system
+
+- name: Pause
+  pause:
+    seconds: 30
 
 - name: Restart kubeflow pods
   become: false
