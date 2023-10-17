@@ -59,6 +59,10 @@
   become: false
   shell: kubectl --context=cluster1 create secret generic cacerts -n istio-system --from-file={{ home_dir_path.stdout }}/certs/cluster1/ca-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster1/ca-key.pem --from-file={{ home_dir_path.stdout }}/certs/root-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster1/cert-chain.pem
 
+- name: Pause
+  pause:
+    seconds: 30
+
 - name: Create CA certs secret (cluster2)
   become: false
   shell: kubectl --context=cluster2 create secret generic cacerts -n istio-system --from-file={{ home_dir_path.stdout }}/certs/cluster2/ca-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster2/ca-key.pem --from-file={{ home_dir_path.stdout }}/certs/root-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster2/cert-chain.pem
