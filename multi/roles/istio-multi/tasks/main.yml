@@ -78,14 +78,14 @@
 - name: Install istio eastwestgateway (cluster1, cluster2)
   become: false
   shell: |
-    {{ home_dir_path.stdout }}/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster1 --network network1 | istioctl --context=cluster1 install -y -f -
-    {{ home_dir_path.stdout }}/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster2 --network network2 | istioctl --context=cluster2 install -y -f -
+    {{ home_dir_path.stdout }}/applications/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster1 --network network1 | istioctl --context=cluster1 install -y -f -
+    {{ home_dir_path.stdout }}/applications/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster2 --network network2 | istioctl --context=cluster2 install -y -f -
 
 - name: Expose service (cluster1, cluster2)
   become: false
   shell: |
-    kubectl --context=cluster1 apply -f istio-1.19.0/samples/multicluster/expose-services.yaml -n istio-system
-    kubectl --context=cluster2 apply -f istio-1.19.0/samples/multicluster/expose-services.yaml -n istio-system
+    kubectl --context=cluster1 apply -f {{ home_dir_path.stdout }}/applications/istio-1.19.0/samples/multicluster/expose-services.yaml -n istio-system
+    kubectl --context=cluster2 apply -f {{ home_dir_path.stdout }}/applications/istio-1.19.0/samples/multicluster/expose-services.yaml -n istio-system
 
 - name: Enable endpoint discovery (cluster1, cluster20
   become: false
