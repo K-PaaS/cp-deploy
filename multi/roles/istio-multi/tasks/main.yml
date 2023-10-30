@@ -49,152 +49,46 @@
   shell: |
     while [ ! -z $(kubectl --context=cluster2 get pods -A | grep -v Running | grep -v Completed | awk 'NR == 2 {print $2}') ]; do sleep 10; done
 
-- name: Create CA certs secret (cluster1)
+- name: Create istio-system namespace (cluster1, cluster2)
+  become: false
+  shell: |
+    kubectl --context=cluster1 create ns istio-system
+    kubectl --context=cluster2 create ns istio-system
+
+ name: Create CA certs secret (cluster1)
   become: false
   shell: kubectl --context=cluster1 create secret generic cacerts -n istio-system --from-file={{ home_dir_path.stdout }}/certs/cluster1/ca-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster1/ca-key.pem --from-file={{ home_dir_path.stdout }}/certs/root-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster1/cert-chain.pem
-
-- name: Pause
-  pause:
-    seconds: 30
 
 - name: Create CA certs secret (cluster2)
   become: false
   shell: kubectl --context=cluster2 create secret generic cacerts -n istio-system --from-file={{ home_dir_path.stdout }}/certs/cluster2/ca-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster2/ca-key.pem --from-file={{ home_dir_path.stdout }}/certs/root-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster2/cert-chain.pem
 
-- name: Remove label istio-system ns injection (cluster1)
-  become: false
-  shell: kubectl --context=cluster1 label namespace istio-system istio-injection-
-
-- name: Add label istio-system ns network (cluster1)
-  become: false
-  shell: kubectl --context=cluster1 label namespace istio-system topology.istio.io/network=network1
-
-- name: Remove label istio-system ns injection (cluster2)
-  become: false
-  shell: kubectl --context=cluster2 label namespace istio-system istio-injection-
-
-- name: Add label istio-system ns network (cluster2)
-  become: false
-  shell: kubectl --context=cluster2 label namespace istio-system topology.istio.io/network=network2
-
-- name: Install istio-cni (cluster1)
+- name: Install istio (cluster1, cluster2)
   become: false
   shell: |
-    helm repo add istio https://istio-release.storage.googleapis.com/charts --kube-context=cluster1
-    helm install istio-cni istio/cni -n istio-system --kube-context=cluster1
-  ignore_errors: true
+    istioctl install --context=cluster1 -f cluster1.yaml
+    istioctl install --context=cluster2 -f cluster2.yaml
 
-- name: Install istio-cni (cluster2)
+- name: Set label istio-system (cluster1, cluster2)
   become: false
   shell: |
-    helm repo add istio https://istio-release.storage.googleapis.com/charts --kube-context=cluster2
-    helm install istio-cni istio/cni -n istio-system --kube-context=cluster2
-  ignore_errors: true
+    kubectl --context=cluster1 label namespace istio-system topology.istio.io/network=network1
+    kubectl --context=cluster2 label namespace istio-system topology.istio.io/network=network2
 
-- name: Install jq package
-  apt:
-    name: jq
-
-- name: Get istio-sidecar-injector configmap .data.values (cluster1)
+- name: Install istio eastwestgateway (cluster1, cluster2)
   become: false
   shell: |
-    kubectl --context=cluster1 get configmap -o json istio-sidecar-injector -n istio-system | jq .data.values | sed -E 's/\\\"meshID\\\"\: \\\"\\\"/\\\"meshID\\\"\: \\\"mesh1\\\"/g' | sed -E 's/\\\"clusterName\\\"\: \\\"\\\"/\\\"clusterName\\\"\: \\\"cluster1\\\"/g' |  sed -E 's/\\\"network\\\"\: \\\"\\\"/\\\"network\\\"\: \\\"network1\\\"/g' | sed -E 's/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: false/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: true/g'
-  register: configmap_value1
+    {{ home_dir_path.stdout }}/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster1 --network network1 | istioctl --context=cluster1 install -y -f -
+    {{ home_dir_path.stdout }}/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster2 --network network2 | istioctl --context=cluster2 install -y -f -
 
-- name: Modify istio configmap (cluster1)
+- name: Expose service (cluster1, cluster2)
   become: false
   shell: |
-    kubectl --context=cluster1 patch configmap istio-sidecar-injector --patch '{"data": { "values": {{ configmap_value1.stdout }} }}' -n istio-system
+    kubectl --context=cluster1 apply -f istio-1.19.0/samples/multicluster/expose-services.yaml -n istio-system
+    kubectl --context=cluster2 apply -f istio-1.19.0/samples/multicluster/expose-services.yaml -n istio-system
 
-- name: Pause
-  pause:
-    seconds: 30
-
-- name: Get istio-sidecar-injector configmap .data.values (cluster2)
+- name: Enable endpoint discovery (cluster1, cluster20
   become: false
   shell: |
-    kubectl --context=cluster2 get configmap -o json istio-sidecar-injector -n istio-system | jq .data.values | sed -E 's/\\\"meshID\\\"\: \\\"\\\"/\\\"meshID\\\"\: \\\"mesh1\\\"/g' | sed -E 's/\\\"clusterName\\\"\: \\\"\\\"/\\\"clusterName\\\"\: \\\"cluster2\\\"/g' |  sed -E 's/\\\"network\\\"\: \\\"\\\"/\\\"network\\\"\: \\\"network2\\\"/g' | sed -E 's/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: false/\\\"istio_cni\\\"\: \{\\n    \\\"enabled\\\"\: true/g'
-  register: configmap_value2
-
-- name: Modify istio configmap (cluster2)
-  become: false
-  shell: |
-    kubectl --context=cluster2 patch configmap istio-sidecar-injector --patch '{"data": { "values": {{ configmap_value2.stdout }} }}' -n istio-system
-
-- name: Pause
-  pause:
-    seconds: 30
-
-- name: Modify istiod deployment (cluster1)
-  become: false
-  shell: |
-    kubectl --context=cluster1 set env deployment istiod CLUSTER_ID=cluster1 -n istio-system
-
-- name: Pause
-  pause:
-    seconds: 30
-
-- name: Modify istio-ingressgateway deployment (cluster1)
-  become: false
-  shell: |
-    kubectl --context=cluster1 set env deployment istio-ingressgateway ISTIO_META_CLUSTER_ID=cluster1 CLUSTER_ID=cluster1 -n istio-system
-
-- name: Pause
-  pause:
-    seconds: 30
-
-- name: Modify istiod deployment (cluster2)
-  become: false
-  shell: |
-    kubectl --context=cluster2 set env deployment istiod CLUSTER_ID=cluster2 -n istio-system
-
-- name: Pause
-  pause:
-    seconds: 30
-
-- name: Modify istio-ingressgateway deployment (cluster1)
-  become: false
-  shell: |
-    kubectl --context=cluster2 set env deployment istio-ingressgateway ISTIO_META_CLUSTER_ID=cluster2 CLUSTER_ID=cluster2 -n istio-system
-
-- name: Pause
-  pause:
-    seconds: 30
-
-- name: Restart kubeflow pods
-  become: false
-  shell: |
-    kubectl --context=cluster1 delete pods --all -n knative-serving
-    kubectl --context=cluster1 delete pods --all -n kubeflow-user-example-com
-    kubectl --context=cluster1 delete pods --all -n kubeflow
-    kubectl --context=cluster2 delete pods --all -n knative-serving
-    kubectl --context=cluster2 delete pods --all -n kubeflow-user-example-com
-    kubectl --context=cluster2 delete pods --all -n kubeflow
-
-- name: Install east-west gateway (cluster1)
-  become: false
-  shell: |
-    {{ home_dir_path.stdout }}/istio-1.16.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster1 --network network1 | istioctl --context=cluster1 install -y -f -
-
-- name: expose service (cluster1)
-  become: false
-  shell: kubectl --context=cluster1 apply -f {{ home_dir_path.stdout }}/istio-1.16.0/samples/multicluster/expose-services.yaml -n istio-system
-
-- name: Install east-west gateway (cluster2)
-  become: false
-  shell: |
-    {{ home_dir_path.stdout }}/istio-1.16.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster2 --network network2 | istioctl --context=cluster2 install -y -f -
-
-- name: expose service (cluster2)
-  become: false
-  shell: kubectl --context=cluster2 apply -f {{ home_dir_path.stdout }}/istio-1.16.0/samples/multicluster/expose-services.yaml -n istio-system
-
-- name: Enable endpoint discovery (cluster1)
-  become: false
-  shell: |
-    istioctl x create-remote-secret --name=cluster2 --context=cluster2 | kubectl --context=cluster1 apply -f -
-
-- name: Enable endpoint discovery (cluster2)
-  become: false
-  shell: |
-    istioctl x create-remote-secret --name=cluster1 --context=cluster1 | kubectl --context=cluster2 apply -f -
+    istioctl create-remote-secret --name=cluster2 --context=cluster2 | kubectl --context=cluster1 apply -f -
+    istioctl create-remote-secret --name=cluster1 --context=cluster1 | kubectl --context=cluster2 apply -f -
