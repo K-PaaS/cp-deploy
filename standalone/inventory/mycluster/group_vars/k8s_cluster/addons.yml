@@ -212,6 +212,7 @@ metallb_config:
       ip_range:
         - {INGRESS_NGINX_PRIVATE_IP}/32
       auto_assign: false
+# Address Pool List
 #     pool1:
 #       ip_range:
 #         - 10.6.0.0/16

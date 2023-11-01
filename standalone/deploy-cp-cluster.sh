@@ -171,23 +171,25 @@ fi
 CHK_MULTI=$(grep 'ISTIO_INGRESS_PRIVATE_IP' cp-cluster-vars.sh | awk '{print $2}')
 
 if [[ ! "$CHK_MULTI" == "" ]]; then
-  if [ "$ISTIO_INGRESS_PRIVATE_IP" == "" ];
+  if [ "$ISTIO_INGRESS_PRIVATE_IP" == "" ]; then
     echo "ISTIO_INGRESS_PRIVATE_IP is empty. Enter a variable."
     result=2
   elif [[ ! "$ISTIO_INGRESS_PRIVATE_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "ISTIO_INGRESS_PRIVATE_IP is not a value in Ip format. Enter a IP format variable."
     result=2
+  fi
   
   if [ "$result" == 2 ]; then
     return $result
   fi
 
-  if [ "$ISTIO_EASTWEST_PRIVATE_IP" == "" ];
+  if [ "$ISTIO_EASTWEST_PRIVATE_IP" == "" ]; then
     echo "ISTIO_EASTWEST_PRIVATE_IP is empty. Enter a variable."
     result=2
   elif [[ ! "$ISTIO_EASTWEST_PRIVATE_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "ISTIO_EASTWEST_PRIVATE_IP is not a value in Ip format. Enter a IP format variable."
     result=2
+  fi
 
   if [ "$result" == 2 ]; then
     return $result
@@ -350,21 +352,22 @@ if [ "$KUBE_CONTROL_HOSTS" -gt 1 ]; then
 fi
 
 sed -i "s/{METALLB_IP_RANGE}/$METALLB_IP_RANGE/g" inventory/mycluster/group_vars/k8s_cluster/addons.yml
+sed -i "s/{INGRESS_NGINX_PRIVATE_IP}/$INGRESS_NGINX_PRIVATE_IP/g" inventory/mycluster/group_vars/k8s_cluster/addons.yml
 sed -i "s/{NFS_SERVER_PRIVATE_IP}/$NFS_SERVER_PRIVATE_IP/g" ../applications/nfs-provisioner-4.0.0/deployment.yaml
 sed -i "s/{STORAGE_TYPE}/$STORAGE_TYPE/g" roles/cp/storage/defaults/main.yml
 
 if [[ ! "$CHK_MULTI" == "" ]]; then
-  find inventory/mycluster/group_vars/k8s_cluster/addons.yml -exec sed -i -r -e "/auto_assign: false/a\    istio_ingress:\n      ip_range:\n        - $ISTIO_INGRESS_PRIVATE_IP\/32\n      auto_assign: false\n    istio_eastwest:\n      ip_range:\n        - $ISTIO_EASTWEST_PRIVATE_IP\/32\n      auto_assign: false" {} \;;
+  find inventory/mycluster/group_vars/k8s_cluster/addons.yml -exec sed -i -r -e "/# Address Pool List/a\    istio_ingress:\n      ip_range:\n        - $ISTIO_INGRESS_PRIVATE_IP\/32\n      auto_assign: false\n    istio_eastwest:\n      ip_range:\n        - $ISTIO_EASTWEST_PRIVATE_IP\/32\n      auto_assign: false" {} \;;
   find inventory/mycluster/group_vars/k8s_cluster/addons.yml -exec sed -i -r -e "/- ingress_nginx/a\    - istio_ingress\n    - istio_eastwest" {} \;;
 fi
 
 sed -i "s/{INGRESS_NGINX_PUBLIC_IP}/$INGRESS_NGINX_PUBLIC_IP/g" roles/cp/podman/defaults/main.yml
 
 if [[ ! "$CHK_MULTI" == "" ]]; then
-  ISTIO_EASTWEST_PRIVATE_IPTABLE=$(grep "ISTIO_EASTWEST_PRIVATE_IP" cp-cluster-vars-tmp.sh | awk '{print $2}') | cut -d '=' -f2
-  ISTIO_EASTWEST_PUBLIC_IPTABLE=$(grep "ISTIO_EASTWEST_PUBLIC_IP" cp-cluster-vars-tmp.sh | awk '{print $2}') | cut -d '=' -f2
+  ISTIO_EASTWEST_PRIVATE_IPTABLE=`echo $(grep "ISTIO_EASTWEST_PRIVATE_IP" cp-cluster-vars-tmp.sh | awk '{print $2}') | cut -d '=' -f2'
+  ISTIO_EASTWEST_PUBLIC_IPTABLE=`echo $(grep "ISTIO_EASTWEST_PUBLIC_IP" cp-cluster-vars-tmp.sh | awk '{print $2}') | cut -d '=' -f2'
   sed -i "s/{ISTIO_EASTWEST_PRIVATE_IP}/$ISTIO_EASTWEST_PRIVATE_IPTABLE/g" roles/cp/istio-setting/defaults/main.yml
-  sed -i "s/{ISTIO_EASTWEST_PUBLIC_IP}/$ISTIO_EAsTWEST_PUBLIC_IPTABLE/g" roles/cp/istio-setting/defaults/main.yml
+  sed -i "s/{ISTIO_EASTWEST_PUBLIC_IP}/$ISTIO_EASTWEST_PUBLIC_IPTABLE/g" roles/cp/istio-setting/defaults/main.yml
 fi
 
 if [ "$KUBE_CONTROL_HOSTS" -eq 1 ]; then
