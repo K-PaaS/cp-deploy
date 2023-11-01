@@ -156,6 +156,18 @@ if [ "$result" == 2 ]; then
   return $result
 fi
 
+if [ "$INGRESS_NGINX_PRIVATE_IP" == "" ]; then
+  echo "INGRESS_NGINX_PRIVATE_IP is empty. Enter a variable."
+  result=2
+elif [[ ! "$INGRESS_NGINX_PRIVATE_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "INGRESS_NGINX_PRIVATE_IP is not a value in IP format. Enter a IP format variable."
+  result=2
+fi
+
+if [ "$result" == 2 ]; then
+  return $result
+fi
+
 if [ "$INGRESS_NGINX_PUBLIC_IP" == "" ]; then
   echo "INGRESS_NGINX_PUBLIC_IP is empty. Enter a variable."
   result=2
