@@ -208,7 +208,7 @@ metallb_config:
       ip_range:
         - {METALLB_IP_RANGE}
       auto_assign: true
-    ingress_nginx:
+    ingress-nginx:
       ip_range:
         - {INGRESS_NGINX_PRIVATE_IP}/32
       auto_assign: false
@@ -223,7 +223,7 @@ metallb_config:
 #       auto_assign: true
   layer2:
     - primary
-    - ingress_nginx
+    - ingress-nginx
 #   layer3:
 #     defaults:
 #       peer_port: 179

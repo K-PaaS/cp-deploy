@@ -357,15 +357,15 @@ sed -i "s/{NFS_SERVER_PRIVATE_IP}/$NFS_SERVER_PRIVATE_IP/g" ../applications/nfs-
 sed -i "s/{STORAGE_TYPE}/$STORAGE_TYPE/g" roles/cp/storage/defaults/main.yml
 
 if [[ ! "$CHK_MULTI" == "" ]]; then
-  find inventory/mycluster/group_vars/k8s_cluster/addons.yml -exec sed -i -r -e "/# Address Pool List/a\    istio_ingress:\n      ip_range:\n        - $ISTIO_INGRESS_PRIVATE_IP\/32\n      auto_assign: false\n    istio_eastwest:\n      ip_range:\n        - $ISTIO_EASTWEST_PRIVATE_IP\/32\n      auto_assign: false" {} \;;
-  find inventory/mycluster/group_vars/k8s_cluster/addons.yml -exec sed -i -r -e "/- ingress_nginx/a\    - istio_ingress\n    - istio_eastwest" {} \;;
+  find inventory/mycluster/group_vars/k8s_cluster/addons.yml -exec sed -i -r -e "/# Address Pool List/a\    istio-ingress:\n      ip_range:\n        - $ISTIO_INGRESS_PRIVATE_IP\/32\n      auto_assign: false\n    istio-eastwest:\n      ip_range:\n        - $ISTIO_EASTWEST_PRIVATE_IP\/32\n      auto_assign: false" {} \;;
+  find inventory/mycluster/group_vars/k8s_cluster/addons.yml -exec sed -i -r -e "/- ingress-nginx/a\    - istio-ingress\n    - istio-eastwest" {} \;;
 fi
 
 sed -i "s/{INGRESS_NGINX_PUBLIC_IP}/$INGRESS_NGINX_PUBLIC_IP/g" roles/cp/podman/defaults/main.yml
 
 if [[ ! "$CHK_MULTI" == "" ]]; then
-  ISTIO_EASTWEST_PRIVATE_IPTABLE=`echo $(grep "ISTIO_EASTWEST_PRIVATE_IP" cp-cluster-vars-tmp.sh | awk '{print $2}') | cut -d '=' -f2'
-  ISTIO_EASTWEST_PUBLIC_IPTABLE=`echo $(grep "ISTIO_EASTWEST_PUBLIC_IP" cp-cluster-vars-tmp.sh | awk '{print $2}') | cut -d '=' -f2'
+  ISTIO_EASTWEST_PRIVATE_IPTABLE=`echo $(grep "ISTIO_EASTWEST_PRIVATE_IP" cp-cluster-vars-tmp.sh | awk '{print $2}') | cut -d '=' -f2`
+  ISTIO_EASTWEST_PUBLIC_IPTABLE=`echo $(grep "ISTIO_EASTWEST_PUBLIC_IP" cp-cluster-vars-tmp.sh | awk '{print $2}') | cut -d '=' -f2`
   sed -i "s/{ISTIO_EASTWEST_PRIVATE_IP}/$ISTIO_EASTWEST_PRIVATE_IPTABLE/g" roles/cp/istio-setting/defaults/main.yml
   sed -i "s/{ISTIO_EASTWEST_PUBLIC_IP}/$ISTIO_EASTWEST_PUBLIC_IPTABLE/g" roles/cp/istio-setting/defaults/main.yml
 fi
@@ -397,4 +397,8 @@ fi
 echo "Container Platform vars setting completed."
 
 # Deploy Container Platform
-ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root cluster.yml
+if [ "$CHK_MULTI" == "" ]; then
+  ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root cluster.yml
+else
+  ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root playbooks/cluster_multi.yml
+fi
