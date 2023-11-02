@@ -93,6 +93,11 @@
     kubectl --context=cluster1 label namespace istio-system topology.istio.io/network=network1
     kubectl --context=cluster2 label namespace istio-system topology.istio.io/network=network2
 
+- name: Set mode eastwestgateway shell file
+  file:
+    path: "{{ home_dir_path.stdout }}/cp-deployment/applications/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh"
+    mode: 0755
+
 - name: Install istio eastwestgateway (cluster1, cluster2)
   become: false
   shell: |
