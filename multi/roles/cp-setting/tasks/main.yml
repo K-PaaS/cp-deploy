@@ -22,7 +22,7 @@
   become: false
   copy:
     src: "{{ home_dir_path.stdout }}/cp-deployment/multi/cp-cluster-vars1.sh"
-    dest: "{{ home_dir_path.stdout }}/cp-deployment/standalone/cp-cluster-vars1-tmp.sh"
+    dest: "{{ home_dir_path.stdout }}/cp-deployment/standalone/cp-cluster-vars-tmp.sh"
   when:
     - inventory_hostname == groups['kube_control_plane'][1]
 
