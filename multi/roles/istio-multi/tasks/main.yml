@@ -44,11 +44,6 @@
     step certificate create cluster2.intermediate.istio.io {{ home_dir_path.stdout }}/certs/cluster2/ca-cert.pem {{ home_dir_path.stdout }}/certs/cluster2/ca-key.pem --ca {{ home_dir_path.stdout }}/certs/root-cert.pem --ca-key {{ home_dir_path.stdout }}/certs/root-ca.key --profile intermediate-ca --not-after 87600h --no-password --insecure --san cluster2.intermediate.istio.io --kty RSA
     cat {{ home_dir_path.stdout }}/certs/cluster2/ca-cert.pem {{ home_dir_path.stdout }}/certs/root-cert.pem > {{ home_dir_path.stdout }}/certs/cluster2/cert-chain.pem
 
-- name: Check cluster2 pods status
-  become: false
-  shell: |
-    while [ ! -z $(kubectl --context=cluster2 get pods -A | grep -v Running | grep -v Completed | awk 'NR == 2 {print $2}') ]; do sleep 10; done
-
 - name: Create istio-system namespace (cluster1, cluster2)
   become: false
   shell: |
@@ -67,6 +62,7 @@
   become: false
   shell: |
     istioctl install -y --context=cluster1 -f - <<EOF
+    apiVersion: install.istio.io/v1alpha1
     kind: IstioOperator
     spec:
       values:
@@ -75,8 +71,9 @@
           multiCluster:
             clusterName: cluster1
           network: network1
-    EOf
+    EOF
     istioctl install -y --context=cluster2 -f - <<EOF
+    apiVersion: install.istio.io/v1alpha1
     kind: IstioOperator
     spec:
       values:
@@ -85,7 +82,7 @@
           multiCluster:
             clusterName: cluster2
           network: network2
-    EOf
+    EOF
 
 - name: Set label istio-system (cluster1, cluster2)
   become: false
@@ -120,8 +117,8 @@
   become: false
   shell: |
     kubectl --context=cluster1 patch svc ingress-nginx-controller -p '{"spec":{"loadBalancerIP":"{{ cluster1_ingress_nginx_private_ip }}"}}' -n ingress-nginx
-    kubectl --context=cluster1 patch svc istio-ingressgateway -p '{"spec":{"loadBalancerIP":"{{ cluster1_istio_ingress_private_ip }}"}}' -n ingress-nginx
-    kubectl --context=cluster1 patch svc istio-eastwestgateway -p '{"spec":{"loadBalancerIP":"{{ cluster1_istio_eastwest_private_ip }}"}}' -n ingress-nginx
-    kubectl --context=cluster2 patch svc ingress-nginx-controller -p '{"spec":{"loadBalancerIP":"{{ cluster1_ingress_nginx_private_ip }}"}}' -n ingress-nginx
-    kubectl --context=cluster2 patch svc istio-ingressgateway -p '{"spec":{"loadBalancerIP":"{{ cluster1_istio_ingress_private_ip }}"}}' -n ingress-nginx
-    kubectl --context=cluster2 patch svc istio-eastwestgateway -p '{"spec":{"loadBalancerIP":"{{ cluster1_istio_eastwest_private_ip }}"}}' -n ingress-nginx
+    kubectl --context=cluster1 patch svc istio-ingressgateway -p '{"spec":{"loadBalancerIP":"{{ cluster1_istio_ingress_private_ip }}"}}' -n istio-system
+    kubectl --context=cluster1 patch svc istio-eastwestgateway -p '{"spec":{"loadBalancerIP":"{{ cluster1_istio_eastwest_private_ip }}"}}' -n istio-system
+    kubectl --context=cluster2 patch svc ingress-nginx-controller -p '{"spec":{"loadBalancerIP":"{{ cluster2_ingress_nginx_private_ip }}"}}' -n ingress-nginx
+    kubectl --context=cluster2 patch svc istio-ingressgateway -p '{"spec":{"loadBalancerIP":"{{ cluster2_istio_ingress_private_ip }}"}}' -n istio-system
+    kubectl --context=cluster2 patch svc istio-eastwestgateway -p '{"spec":{"loadBalancerIP":"{{ cluster2_istio_eastwest_private_ip }}"}}' -n istio-system
