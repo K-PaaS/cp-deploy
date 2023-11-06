@@ -195,18 +195,6 @@ for ((x=0;x<2;x++))
       return $result
     fi
 
-    if [ "$INGRESS_NGINX_PUBLIC_IP" == "" ]; then
-      echo "INGRESS_NGINX_PUBLIC_IP is empty. Enter a variable."
-      result=2
-    elif [[ ! "$INGRESS_NGINX_PUBLIC_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-      echo "INGRESS_NGINX_PUBLIC_IP is not a value in IP format. Enter a IP format variable."
-      result=2
-    fi
-
-    if [ "$result" == 2 ]; then
-      return $result
-    fi
-
     if [ "$ISTIO_EASTWEST_PUBLIC_IP" == "" ]; then
       echo "ISTIO_EASTWEST_PUBLIC_IP is empty. Enter a variable."
       result=2
@@ -293,9 +281,6 @@ for ((i=0;i<2;i++))
       sed -i "s/{MASTER1_NODE_PUBLIC_IP}/$loadbalancer_domain/g" roles/kubeconfig${j}/defaults/main.yml
     fi
 done
-
-cp roles/podman/defaults/main.yml.ori roles/podman/defaults/main.yml
-sed -i "s/{INGRESS_NGINX_PUBLIC_IP}/$INGRESS_NGINX_PUBLIC_IP/g" roles/podman/defaults/main.yml
 
 cp roles/istio-multi/defaults/main.yml.ori roles/istio-multi/defaults/main.yml
 sed -i "s/{CLUSTER1_INGRESS_NGINX_PRIVATE_IP}/$CLUSTER1_INGRESS_NGINX_PRIVATE_IP/g" roles/istio-multi/defaults/main.yml

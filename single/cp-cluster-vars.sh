@@ -52,6 +52,3 @@ export METALLB_IP_RANGE=
 
 # MetalLB Ingress Nginx Controller LoadBalancer Service External IP
 export INGRESS_NGINX_PRIVATE_IP=
-
-# Ingress Nginx Controller LoadBalancer Service Mapping Public IP Variable
-export INGRESS_NGINX_PUBLIC_IP=
