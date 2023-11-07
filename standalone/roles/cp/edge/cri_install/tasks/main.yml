@@ -15,7 +15,7 @@
 - name: Install Docker Engine
   shell: |
     apt-get update
-    apt-get install -y docker-ce=5:20.10.21~3-0~ubuntu-focal docker-ce-cli=5:20.10.21~3-0~ubuntu-focal containerd.io docker-compose-plugin
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 - name: cri-o download
   shell: |

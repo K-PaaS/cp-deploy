@@ -12,7 +12,7 @@ result=0
 if [ "$CLOUDCORE_VIP" == "" ]; then
   echo "CLOUDCORE_VIP is empty. Enter a variable."
   result=2
-elif [[ ! "$CLOUDCORE_VIP" ~= ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+elif [[ ! "$CLOUDCORE_VIP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "CLOUDCORE_VIP is not a value in IP format. Enter a IP format variable."
   result=2
 elif [ "$CLOUDCORE1_NODE_HOSTNAME" == "" ]; then
