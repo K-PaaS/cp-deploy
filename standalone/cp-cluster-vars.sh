@@ -52,15 +52,3 @@ export METALLB_IP_RANGE=
 
 # MetalLB Ingress Nginx Controller LoadBalancer Service External IP
 export INGRESS_NGINX_PRIVATE_IP=
-
-# MetalLB Istio Ingress Gateway LoadBalancer Service External IP
-export ISTIO_INGRESS_PRIVATE_IP=
-
-# MetalLB Istio EastWest Gateway LoadBalancer Service External IP
-export ISTIO_EASTWEST_PRIVATE_IP=
-
-# Ingress Nginx Controller Service Public IP Variable
-export INGRESS_NGINX_PUBLIC_IP=
-
-# Istio eastwestgateway Service Public IP Variable
-export ISTIO_EASTWEST_PUBLIC_IP=

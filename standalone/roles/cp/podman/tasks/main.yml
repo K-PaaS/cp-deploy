@@ -1,21 +1,8 @@
 ---
-- name: Check podman package installation
-  shell: dpkg -l | grep podman | awk '{print $2}'
-  register: podman_install
-
-- name: Install podman package
-  shell: |
-    echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /' | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-    curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/Release.key | apt-key add -
-    apt-get update
-    echo 'N\nN' > tmp_podman
-    apt-get install -y podman < tmp_podman
-  when: podman_install.stdout == ""
-
-- name: Delete tmp file
-  file:
-    path: "tmp_podman"
-    state: absent
+- name: Install podman
+  apt:
+    name: podman
+    update_cache: yes
 
 - name: Add registries.conf
   shell: |
