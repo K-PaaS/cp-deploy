@@ -206,6 +206,10 @@ elif [ "$KUBE_CONTROL_HOSTS" -gt 1 ]; then
   sed -i "s/{MASTER1_NODE_PUBLIC_IP}/$LOADBALANCER_DOMAIN/g" roles/kubeconfig/defaults/main.yml
 fi
 
+cp roles/istio-single/defaults/main.yml.ori roles/istio-single/defaults/main.yml
+
+sed -i "s/{INGRESS_NGINX_PRIVATE_IP}/$INGRESS_NGINX_PRIVATE_IP/g" roles/istio-single/defaults/main.yml
+
 rm -rf hosts.yaml
 
 cat <<EOF > hosts.yaml
