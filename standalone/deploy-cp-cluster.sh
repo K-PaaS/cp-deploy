@@ -245,7 +245,6 @@ cp inventory/mycluster/group_vars/all/all.yml.ori inventory/mycluster/group_vars
 cp inventory/mycluster/group_vars/k8s_cluster/addons.yml.ori inventory/mycluster/group_vars/k8s_cluster/addons.yml
 cp inventory/mycluster/inventory.ini.ori inventory/mycluster/inventory.ini
 cp roles/container-engine/cri-o/defaults/main.yml.ori roles/container-engine/cri-o/defaults/main.yml
-cp roles/cp/podman/defaults/main.yml.ori roles/cp/podman/defaults/main.yml
 cp roles/cp/storage/defaults/main.yml.ori roles/cp/storage/defaults/main.yml
 cp roles/kubernetes/control-plane/tasks/kubeadm-setup.yml.ori roles/kubernetes/control-plane/tasks/kubeadm-setup.yml
 cp roles/kubernetes-apps/metrics_server/defaults/main.yml.ori roles/kubernetes-apps/metrics_server/defaults/main.yml
@@ -360,8 +359,6 @@ if [[ ! "$CHK_MULTI" == "" ]]; then
   find inventory/mycluster/group_vars/k8s_cluster/addons.yml -exec sed -i -r -e "/# Address Pool List/a\    istio-ingress:\n      ip_range:\n        - $ISTIO_INGRESS_PRIVATE_IP\/32\n      auto_assign: false\n    istio-eastwest:\n      ip_range:\n        - $ISTIO_EASTWEST_PRIVATE_IP\/32\n      auto_assign: false" {} \;;
   find inventory/mycluster/group_vars/k8s_cluster/addons.yml -exec sed -i -r -e "/- ingress-nginx/a\    - istio-ingress\n    - istio-eastwest" {} \;;
 fi
-
-sed -i "s/{INGRESS_NGINX_PUBLIC_IP}/$INGRESS_NGINX_PUBLIC_IP/g" roles/cp/podman/defaults/main.yml
 
 if [[ ! "$CHK_MULTI" == "" ]]; then
   ISTIO_EASTWEST_PRIVATE_IPTABLE=`echo $(grep "ISTIO_EASTWEST_PRIVATE_IP" cp-cluster-vars-tmp.sh | awk '{print $2}') | cut -d '=' -f2`

@@ -3,16 +3,3 @@
   apt:
     name: podman
     update_cache: yes
-
-- name: Add registries.conf
-  shell: |
-    cat <<EOF > /etc/containers/registries.conf.d/10-harbor.{{ ingress_nginx_public_ip }}.nip.io.conf
-    [[registry]]
-    prefix = "harbor.{{ ingress_nginx_public_ip }}.nip.io"
-    insecure = true
-    blocked = false
-    location = "harbor.{{ ingress_nginx_public_ip }}.nip.io"
-    EOF
-
-- name: Restart podman service
-  shell: systemctl restart podman
