@@ -15,7 +15,7 @@
 
 - name: Deploy nfs-provisioner
   shell: |
-    kubectl apply -f {{ home_dir_path.stdout }}/cp-deployment/applications/nfs-provisioner-4.0.0/deployment.yaml
+    kubectl apply -f {{ home_dir_path.stdout }}/cp-deployment/applications/nfs-provisioner-4.0.2/deployment.yaml
     kubectl patch storageclass cp-storageclass -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
   when:
     - inventory_hostname == groups['kube_control_plane'][0]

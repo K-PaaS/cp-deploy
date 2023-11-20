@@ -247,7 +247,7 @@ cp inventory/mycluster/inventory.ini.ori inventory/mycluster/inventory.ini
 cp roles/cp/storage/defaults/main.yml.ori roles/cp/storage/defaults/main.yml
 cp roles/kubernetes/control-plane/tasks/kubeadm-setup.yml.ori roles/kubernetes/control-plane/tasks/kubeadm-setup.yml
 cp roles/kubernetes-apps/metrics_server/defaults/main.yml.ori roles/kubernetes-apps/metrics_server/defaults/main.yml
-cp ../applications/nfs-provisioner-4.0.0/deployment.yaml.ori ../applications/nfs-provisioner-4.0.0/deployment.yaml
+cp ../applications/nfs-provisioner-4.0.2/deployment.yaml.ori ../applications/nfs-provisioner-4.0.2/deployment.yaml
 cp roles/cp/istio-setting/defaults/main.yml.ori roles/cp/istio-setting/defaults/main.yml
 
 ARRAY_MASTER_NODE_IP=""
@@ -350,7 +350,7 @@ fi
 
 sed -i "s/{METALLB_IP_RANGE}/$METALLB_IP_RANGE/g" inventory/mycluster/group_vars/k8s_cluster/addons.yml
 sed -i "s/{INGRESS_NGINX_PRIVATE_IP}/$INGRESS_NGINX_PRIVATE_IP/g" inventory/mycluster/group_vars/k8s_cluster/addons.yml
-sed -i "s/{NFS_SERVER_PRIVATE_IP}/$NFS_SERVER_PRIVATE_IP/g" ../applications/nfs-provisioner-4.0.0/deployment.yaml
+sed -i "s/{NFS_SERVER_PRIVATE_IP}/$NFS_SERVER_PRIVATE_IP/g" ../applications/nfs-provisioner-4.0.2/deployment.yaml
 sed -i "s/{STORAGE_TYPE}/$STORAGE_TYPE/g" roles/cp/storage/defaults/main.yml
 
 if [[ ! "$CHK_MULTI" == "" ]]; then

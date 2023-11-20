@@ -18,7 +18,7 @@ spec:
       serviceAccountName: nfs-pod-provisioner-sa # name of service account
       containers:
         - name: nfs-pod-provisioner
-          image: gcr.io/k8s-staging-sig-storage/nfs-subdir-external-provisioner:v4.0.0
+          image: registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2
           volumeMounts:
             - name: nfs-provisioner
               mountPath: /persistentvolumes
@@ -96,6 +96,7 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: cp-storageclass
+reclaimPolicy: Retain
 provisioner: cp-nfs-provisioner
 parameters:
   archiveOnDelete: "false"
