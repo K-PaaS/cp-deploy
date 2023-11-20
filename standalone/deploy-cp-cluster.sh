@@ -244,7 +244,6 @@ rm -rf inventory/mycluster/hosts.yaml
 cp inventory/mycluster/group_vars/all/all.yml.ori inventory/mycluster/group_vars/all/all.yml
 cp inventory/mycluster/group_vars/k8s_cluster/addons.yml.ori inventory/mycluster/group_vars/k8s_cluster/addons.yml
 cp inventory/mycluster/inventory.ini.ori inventory/mycluster/inventory.ini
-cp roles/container-engine/cri-o/defaults/main.yml.ori roles/container-engine/cri-o/defaults/main.yml
 cp roles/cp/storage/defaults/main.yml.ori roles/cp/storage/defaults/main.yml
 cp roles/kubernetes/control-plane/tasks/kubeadm-setup.yml.ori roles/kubernetes/control-plane/tasks/kubeadm-setup.yml
 cp roles/kubernetes-apps/metrics_server/defaults/main.yml.ori roles/kubernetes-apps/metrics_server/defaults/main.yml
@@ -313,7 +312,6 @@ done
 
 sed -i "s/{MASTER1_NODE_HOSTNAME}/$MASTER1_NODE_HOSTNAME/g" roles/kubernetes-apps/metrics_server/defaults/main.yml
 sed -i "s/{MASTER1_NODE_PUBLIC_IP}/$MASTER1_NODE_PUBLIC_IP/g" roles/kubernetes/control-plane/tasks/kubeadm-setup.yml
-sed -i "s/{MASTER1_NODE_PUBLIC_IP}/$MASTER1_NODE_PUBLIC_IP/g" roles/container-engine/cri-o/defaults/main.yml
 
 if [ "$KUBE_CONTROL_HOSTS" -gt 1 ]; then
   ETCD_URL="";
