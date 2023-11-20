@@ -391,6 +391,8 @@ if [ "$ETCD_TYPE" == "external" ]; then
   done
 fi
 
+sed -i "s/metallb_enabled: false/metallb_enabled: true/g" inventory/mycluster/group_vars/k8s_cluster/addons.yml
+
 echo "Container Platform vars setting completed."
 
 # Deploy Container Platform
