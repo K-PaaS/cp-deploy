@@ -1,62 +1,60 @@
 ---
-- name: Get home dir path
-  become: false
-  shell: "echo $HOME"
-  register: home_dir_path
-
 - name: Download step
   become: false
   get_url:
     url: https://github.com/smallstep/cli/releases/download/v0.24.4/step_linux_0.24.4_amd64.tar.gz
-    dest: "{{ home_dir_path.stdout }}/step.tar.gz"
+    dest: "{{ lookup('env', 'HOME') }}/step.tar.gz"
 
 - name: Unarchive step
   shell: |
-    tar zxvf {{ home_dir_path.stdout }}/step.tar.gz
+    tar zxvf {{ lookup('env', 'HOME') }}/step.tar.gz
     mv step_0.24.4/bin/step /usr/local/bin
     chmod +x /usr/local/bin/step
 
 - name: Create certs/cluster1 dir
   become: false
   file:
-    path: "{{ home_dir_path.stdout }}/certs/cluster1"
+    path: "{{ lookup('env', 'HOME') }}/certs/cluster1"
     state: directory
 
 - name: Create certs/cluster2 dir
   become: false
   file:
-    path: "{{ home_dir_path.stdout }}/certs/cluster2"
+    path: "{{ lookup('env', 'HOME') }}/certs/cluster2"
     state: directory
 
 - name: Crate rootCA certificate
   become: false
-  shell: step certificate create root.istio.io {{ home_dir_path.stdout }}/certs/root-cert.pem {{ home_dir_path.stdout }}/certs/root-ca.key --profile root-ca --no-password --insecure --san root.istio.io --not-after 87600h --kty RSA
+  shell: step certificate create root.istio.io {{ lookup('env', 'HOME') }}/certs/root-cert.pem {{ lookup('env', 'HOME') }}/certs/root-ca.key --profile root-ca --no-password --insecure --san root.istio.io --not-after 87600h --kty RSA
 
 - name: Create certificate (cluster1)
   become: false
   shell: |
-    step certificate create cluster1.intermediate.istio.io {{ home_dir_path.stdout }}/certs/cluster1/ca-cert.pem {{ home_dir_path.stdout }}/certs/cluster1/ca-key.pem --ca {{ home_dir_path.stdout }}/certs/root-cert.pem --ca-key {{ home_dir_path.stdout }}/certs/root-ca.key --profile intermediate-ca --not-after 87600h --no-password --insecure --san cluster1.intermediate.istio.io --kty RSA
-    cat {{ home_dir_path.stdout }}/certs/cluster1/ca-cert.pem {{ home_dir_path.stdout }}/certs/root-cert.pem > {{ home_dir_path.stdout }}/certs/cluster1/cert-chain.pem
+    step certificate create cluster1.intermediate.istio.io {{ lookup('env', 'HOME') }}/certs/cluster1/ca-cert.pem {{ lookup('env', 'HOME') }}/certs/cluster1/ca-key.pem --ca {{ lookup('env', 'HOME') }}/certs/root-cert.pem --ca-key {{ lookup('env', 'HOME') }}/certs/root-ca.key --profile intermediate-ca --not-after 87600h --no-password --insecure --san cluster1.intermediate.istio.io --kty RSA
+    cat {{ lookup('env', 'HOME') }}/certs/cluster1/ca-cert.pem {{ lookup('env', 'HOME') }}/certs/root-cert.pem > {{ lookup('env', 'HOME') }}/certs/cluster1/cert-chain.pem
 
 - name: Create certificate (cluster2)
   become: false
   shell: |
-    step certificate create cluster2.intermediate.istio.io {{ home_dir_path.stdout }}/certs/cluster2/ca-cert.pem {{ home_dir_path.stdout }}/certs/cluster2/ca-key.pem --ca {{ home_dir_path.stdout }}/certs/root-cert.pem --ca-key {{ home_dir_path.stdout }}/certs/root-ca.key --profile intermediate-ca --not-after 87600h --no-password --insecure --san cluster2.intermediate.istio.io --kty RSA
-    cat {{ home_dir_path.stdout }}/certs/cluster2/ca-cert.pem {{ home_dir_path.stdout }}/certs/root-cert.pem > {{ home_dir_path.stdout }}/certs/cluster2/cert-chain.pem
+    step certificate create cluster2.intermediate.istio.io {{ lookup('env', 'HOME') }}/certs/cluster2/ca-cert.pem {{ lookup('env', 'HOME') }}/certs/cluster2/ca-key.pem --ca {{ lookup('env', 'HOME') }}/certs/root-cert.pem --ca-key {{ lookup('env', 'HOME') }}/certs/root-ca.key --profile intermediate-ca --not-after 87600h --no-password --insecure --san cluster2.intermediate.istio.io --kty RSA
+    cat {{ lookup('env', 'HOME') }}/certs/cluster2/ca-cert.pem {{ lookup('env', 'HOME') }}/certs/root-cert.pem > {{ lookup('env', 'HOME') }}/certs/cluster2/cert-chain.pem
 
 - name: Create istio-system namespace (cluster1, cluster2)
   become: false
   shell: |
     kubectl --context=cluster1 create ns istio-system
     kubectl --context=cluster2 create ns istio-system
+  ignore_errors: yes
 
 - name: Create CA certs secret (cluster1)
   become: false
-  shell: kubectl --context=cluster1 create secret generic cacerts -n istio-system --from-file={{ home_dir_path.stdout }}/certs/cluster1/ca-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster1/ca-key.pem --from-file={{ home_dir_path.stdout }}/certs/root-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster1/cert-chain.pem
+  shell: kubectl --context=cluster1 create secret generic cacerts -n istio-system --from-file={{ lookup('env', 'HOME') }}/certs/cluster1/ca-cert.pem --from-file={{ lookup('env', 'HOME') }}/certs/cluster1/ca-key.pem --from-file={{ lookup('env', 'HOME') }}/certs/root-cert.pem --from-file={{ lookup('env', 'HOME') }}/certs/cluster1/cert-chain.pem
+  ignore_errors: yes
 
 - name: Create CA certs secret (cluster2)
   become: false
-  shell: kubectl --context=cluster2 create secret generic cacerts -n istio-system --from-file={{ home_dir_path.stdout }}/certs/cluster2/ca-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster2/ca-key.pem --from-file={{ home_dir_path.stdout }}/certs/root-cert.pem --from-file={{ home_dir_path.stdout }}/certs/cluster2/cert-chain.pem
+  shell: kubectl --context=cluster2 create secret generic cacerts -n istio-system --from-file={{ lookup('env', 'HOME') }}/certs/cluster2/ca-cert.pem --from-file={{ lookup('env', 'HOME') }}/certs/cluster2/ca-key.pem --from-file={{ lookup('env', 'HOME') }}/certs/root-cert.pem --from-file={{ lookup('env', 'HOME') }}/certs/cluster2/cert-chain.pem
+  ignore_errors: yes
 
 - name: Install istio (cluster1, cluster2)
   become: false
@@ -89,23 +87,25 @@
   shell: |
     kubectl --context=cluster1 label namespace istio-system topology.istio.io/network=network1
     kubectl --context=cluster2 label namespace istio-system topology.istio.io/network=network2
+  ignore_errors: yes
 
 - name: Set mode eastwestgateway shell file
   file:
-    path: "{{ home_dir_path.stdout }}/cp-deployment/applications/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh"
+    path: "{{ lookup('env', 'HOME') }}/cp-deployment/applications/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh"
     mode: 0755
 
 - name: Install istio eastwestgateway (cluster1, cluster2)
   become: false
   shell: |
-    {{ home_dir_path.stdout }}/cp-deployment/applications/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster1 --network network1 | istioctl --context=cluster1 install -y -f -
-    {{ home_dir_path.stdout }}/cp-deployment/applications/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster2 --network network2 | istioctl --context=cluster2 install -y -f -
+    {{ lookup('env', 'HOME') }}/cp-deployment/applications/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster1 --network network1 | istioctl --context=cluster1 install -y -f -
+    {{ lookup('env', 'HOME') }}/cp-deployment/applications/istio-1.19.0/samples/multicluster/gen-eastwest-gateway.sh --mesh mesh1 --cluster cluster2 --network network2 | istioctl --context=cluster2 install -y -f -
 
 - name: Expose service (cluster1, cluster2)
   become: false
   shell: |
-    kubectl --context=cluster1 apply -f {{ home_dir_path.stdout }}/cp-deployment/applications/istio-1.19.0/samples/multicluster/expose-services.yaml -n istio-system
-    kubectl --context=cluster2 apply -f {{ home_dir_path.stdout }}/cp-deployment/applications/istio-1.19.0/samples/multicluster/expose-services.yaml -n istio-system
+    kubectl --context=cluster1 apply -f {{ lookup('env', 'HOME') }}/cp-deployment/applications/istio-1.19.0/samples/multicluster/expose-services.yaml -n istio-system
+    kubectl --context=cluster2 apply -f {{ lookup('env', 'HOME') }}/cp-deployment/applications/istio-1.19.0/samples/multicluster/expose-services.yaml -n istio-system
+  ignore_errors: yes
 
 - name: Enable endpoint discovery (cluster1, cluster2)
   become: false
@@ -122,3 +122,4 @@
     kubectl --context=cluster2 patch svc ingress-nginx-controller -p '{"spec":{"loadBalancerIP":"{{ cluster2_ingress_nginx_private_ip }}"}}' -n ingress-nginx
     kubectl --context=cluster2 patch svc istio-ingressgateway -p '{"spec":{"loadBalancerIP":"{{ cluster2_istio_ingress_private_ip }}"}}' -n istio-system
     kubectl --context=cluster2 patch svc istio-eastwestgateway -p '{"spec":{"loadBalancerIP":"{{ cluster2_istio_eastwest_private_ip }}"}}' -n istio-system
+  ignore_errors: yes

@@ -1,9 +1,4 @@
 ---
-- name: Get home dir path
-  become: false
-  shell: "echo $HOME"
-  register: home_dir_path
-
 - name: Install podman
   apt:
     name: podman

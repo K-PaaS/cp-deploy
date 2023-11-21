@@ -1,7 +1,7 @@
 ---
 - name: Copy security.bin
   copy:
-    src: "~/cp-deployment/edge/security.bin"
+    src: "{{ lookup('env', 'HOME') }}/cp-deployment/edge/security.bin"
     dest: "security.bin"
     mode: "0755"
 

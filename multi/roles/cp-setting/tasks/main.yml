@@ -7,13 +7,13 @@
 - name: Copy vars file
   become: false
   copy:
-    src: "{{ home_dir_path.stdout }}/cp-deployment/multi/cp-cluster-vars{{ groups['kube_control_plane'].index(inventory_hostname)|int + 1|int }}.sh"
+    src: "{{ lookup('env', 'HOME') }}/cp-deployment/multi/cp-cluster-vars{{ groups['kube_control_plane'].index(inventory_hostname)|int + 1|int }}.sh"
     dest: "{{ home_dir_path.stdout }}/cp-deployment/standalone/cp-cluster-vars.sh"
 
 - name: Copy vars file (cluster1)
   become: false
   copy:
-    src: "{{ home_dir_path.stdout }}/cp-deployment/multi/cp-cluster-vars2.sh"
+    src: "{{ lookup('env', 'HOME') }}/cp-deployment/multi/cp-cluster-vars2.sh"
     dest: "{{ home_dir_path.stdout }}/cp-deployment/standalone/cp-cluster-vars-tmp.sh"
   when:
     - inventory_hostname == groups['kube_control_plane'][0]
@@ -21,7 +21,7 @@
 - name: Copy vars file (cluster2)
   become: false
   copy:
-    src: "{{ home_dir_path.stdout }}/cp-deployment/multi/cp-cluster-vars1.sh"
+    src: "{{ lookup('env', 'HOME') }}/cp-deployment/multi/cp-cluster-vars1.sh"
     dest: "{{ home_dir_path.stdout }}/cp-deployment/standalone/cp-cluster-vars-tmp.sh"
   when:
     - inventory_hostname == groups['kube_control_plane'][1]
@@ -29,7 +29,7 @@
 - name: Copy key file
   become: false
   copy:
-    src: "{{ home_dir_path.stdout }}/.ssh/id_rsa"
+    src: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
     dest: "{{ home_dir_path.stdout }}/.ssh/id_rsa"
 
 - name: Chmod key file

@@ -4,5 +4,7 @@
   register: nfs_install
 
 - name: Install nfs common package
-  shell: apt-get install -y nfs-common
+  apt:
+    name: nfs-common
+    update_cache: yes
   when: nfs_install.stdout == ""

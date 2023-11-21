@@ -1,9 +1,4 @@
 ---
-- name: Get home dir path
-  become: false
-  shell: "echo $HOME"
-  register: home_dir_path
-
 - name: Merge kubeconfig
   become: false
-  shell: KUBECONFIG={{ home_dir_path.stdout }}/.kube/config1:{{ home_dir_path.stdout}}/.kube/config2 kubectl config view --flatten > {{ home_dir_path.stdout }}/.kube/config
+  shell: KUBECONFIG={{ lookup('env', 'HOME') }}/.kube/config1:{{ lookup('env', 'HOME') }}/.kube/config2 kubectl config view --flatten > {{ lookup('env', 'HOME') }}/.kube/config

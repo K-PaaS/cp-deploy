@@ -40,5 +40,5 @@
   become: false
   fetch:
     src: "{{ home_dir_path.stdout }}/.kube/kubeconfig"
-    dest: "{{ home_dir_path.stdout }}/.kube/config1"
+    dest: "{{ lookup('env', 'HOME') }}/.kube/config1"
     flat: yes
