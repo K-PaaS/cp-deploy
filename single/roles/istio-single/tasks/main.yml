@@ -1,4 +1,12 @@
 ---
+- name: check kube status
+  shell: |
+    kubectl get pods -n kube-system | grep kube-apiserver | awk '{print $3}'
+  register: status
+  until: status.stdout == "Running"
+  retries: 10
+  delay: 15
+
 - name: Patch loadbalancer svc external ip
   become: false
   shell: |
